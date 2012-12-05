@@ -6,7 +6,7 @@ key = gets
 key.chomp!
 puts 'enter consumer secret, or [ENTER] to use $TOOPHER_CONSUMER_SECRET'
 secret = gets
-key.chomp!
+secret.chomp!
 
 toopher = ToopherAPI.new(key, secret)
 

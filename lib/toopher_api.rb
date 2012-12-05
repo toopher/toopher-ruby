@@ -66,10 +66,9 @@ class ToopherAPI
 
   private
   def make_pair_response(result)
-    puts 'make_pair_response: ' + result.inspect
     return {
       'id' => result['id'],
-      'enabled' => result['enabled'] == 'true',
+      'enabled' => result['enabled'],
       'user_id' => result['user']['id'],
       'user_name' => result['user']['name']
     }
@@ -77,9 +76,9 @@ class ToopherAPI
   def make_auth_response(result)
     return {
       'id' => result['id'],
-      'pending' => result['pending'] == 'true',
-      'granted' => result['granted'] == 'true',
-      'automated' => result['automated'] == 'true',
+      'pending' => result['pending'],
+      'granted' => result['granted'],
+      'automated' => result['automated'],
       'reason' => result['reason'],
       'terminal_id' => result['terminal']['id'],
       'terminal_name' => result['terminal']['name']
