@@ -1,0 +1,137 @@
+require 'test/unit'
+require 'webmock/test_unit'
+require 'toopher_api'
+
+class TestToopher < Test::Unit::TestCase
+  def test_constructor()
+    old_key = ENV['TOOPHER_CONSUMER_KEY']
+    old_secret = ENV['TOOPHER_CONSUMER_SECRET']
+    ENV['TOOPHER_CONSUMER_KEY'] = ''
+    ENV['TOOPHER_CONSUMER_SECRET'] = ''
+
+    assert_raise ArgumentError do
+      api = ToopherAPI.new
+    end
+
+    assert_raise ArgumentError do
+      api = ToopherAPI.new('key')
+    end
+
+    assert_raise ArgumentError do
+      api = ToopherAPI.new('', 'secret')
+    end
+
+    assert_nothing_raised do
+      api = ToopherAPI.new('key', 'secret')
+    end
+
+    ENV['TOOPHER_CONSUMER_KEY'] = 'key'
+    ENV['TOOPHER_CONSUMER_SECRET'] = 'secret'
+    assert_nothing_raised do
+      api = ToopherAPI.new()
+    end
+
+    ENV['TOOPHER_CONSUMER_KEY'] = old_key
+    ENV['TOOPHER_CONSUMER_SECRET'] = old_secret
+  end
+
+  def test_create_pairing_immediate_success()
+    stub_http_request(:post, "http://toopher-api.appspot.com:443/v1/pairings/create").
+      with(
+#        :headers => {
+#          'Authorization' => 'OAuth oauth_consumer_key="key",oauth_nonce="nonce",oauth_signature="%2FW9rUAFDuJTTBtfSxeQ%2FDxWpVQY%3D",oauth_signature_method="HMAC-SHA1",oauth_timestamp="0",oauth_version="1.0"'
+#          },
+        :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' }
+      ).
+      to_return(
+        :body => '{"id":"1","enabled":"true","user":{"id":"1","name":"user"}}',
+        :status => 200,
+      )
+
+      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+      pairing = toopher.pair('immediate_pair', 'user')
+      assert(pairing['id'] == '1', 'bad pairing id')
+      assert(pairing['enabled'] == true, 'pairing not enabled')
+      assert(pairing['user_id'] == '1', 'bad user id')
+      assert(pairing['user_name'] == 'user', 'bad user name')
+
+  end
+  def test_get_pairing_status()
+    stub_http_request(:get, "toopher-api.appspot.com:443/v1/pairings/1").
+      to_return(
+        :body => '{"id":"1","enabled":"true","user":{"id":"1","name":"paired user"}}',
+        :status => 200,
+      )
+    stub_http_request(:get, "toopher-api.appspot.com:443/v1/pairings/2").
+      to_return(
+        :body => '{"id":"2","enabled":"false","user":{"id":"2","name":"unpaired user"}}',
+        :status => 200,
+      )
+
+      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+      pairing = toopher.get_pairing_status('1')
+      assert(pairing['id'] == '1', 'bad pairing id')
+      assert(pairing['enabled'] == true, 'pairing not enabled')
+      assert(pairing['user_id'] == '1', 'bad user id')
+      assert(pairing['user_name'] == 'paired user', 'bad user name')
+
+      pairing = toopher.get_pairing_status('2')
+      assert(pairing['id'] == '2', 'bad pairing id')
+      assert(pairing['enabled'] == false, 'pairing should not be enabled')
+      assert(pairing['user_id'] == '2', 'bad user id')
+      assert(pairing['user_name'] == 'unpaired user', 'bad user name')
+  end
+
+  def test_create_authentication_with_no_action()
+    stub_http_request(:post, "toopher-api.appspot.com:443/v1/authentication_requests/initiate").
+      with(
+        :body => { 'pairing_id' => '1', 'terminal_name' => 'term name' }
+      ).
+      to_return(
+        :body => '{"id":"1","pending":"false","granted":"true","automated":"true","reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :status => 200,
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+    auth = toopher.authenticate('1', 'term name')
+    assert(auth['id'] == '1', 'wrong auth id')
+    assert(auth['pending'] == false, 'wrong auth pending')
+    assert(auth['granted'] == true, 'wrong auth granted')
+    assert(auth['automated'] == true, 'wrong auth automated')
+    assert(auth['reason'] == 'some reason', 'wrong auth reason')
+    assert(auth['terminal_id'] == '1', 'wrong auth terminal id')
+    assert(auth['terminal_name'] == 'term name', 'wrong auth terminal name')
+  end
+
+  def test_get_authentication_status()
+    stub_http_request(:get, "toopher-api.appspot.com:443/v1/authentication_requests/1").
+      to_return(
+        :body => '{"id":"1","pending":"false","granted":"true","automated":"true","reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :status => 200,
+      )
+    stub_http_request(:get, "toopher-api.appspot.com:443/v1/authentication_requests/2").
+      to_return(
+        :body => '{"id":"2","pending":"true","granted":"false","automated":"false","reason":"some other reason","terminal":{"id":"2","name":"another term name"}}',
+        :status => 200,
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+    auth = toopher.get_authentication_status('1')
+    assert(auth['id'] == '1', 'wrong auth id')
+    assert(auth['pending'] == false, 'wrong auth pending')
+    assert(auth['granted'] == true, 'wrong auth granted')
+    assert(auth['automated'] == true, 'wrong auth automated')
+    assert(auth['reason'] == 'some reason', 'wrong auth reason')
+    assert(auth['terminal_id'] == '1', 'wrong auth terminal id')
+    assert(auth['terminal_name'] == 'term name', 'wrong auth terminal name')
+
+    auth = toopher.get_authentication_status('2')
+    assert(auth['id'] == '2', 'wrong auth id')
+    assert(auth['pending'] == true, 'wrong auth pending')
+    assert(auth['granted'] == false, 'wrong auth granted')
+    assert(auth['automated'] == false, 'wrong auth automated')
+    assert(auth['reason'] == 'some other reason', 'wrong auth reason')
+    assert(auth['terminal_id'] == '2', 'wrong auth terminal id')
+    assert(auth['terminal_name'] == 'another term name', 'wrong auth terminal name')
+  end
+end
