@@ -36,7 +36,7 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_create_pairing_immediate_success()
-    stub_http_request(:post, "http://toopher-api.appspot.com:443/v1/pairings/create").
+    stub_http_request(:post, "https://toopher-api.appspot.com/v1/pairings/create").
       with(
 #        :headers => {
 #          'Authorization' => 'OAuth oauth_consumer_key="key",oauth_nonce="nonce",oauth_signature="%2FW9rUAFDuJTTBtfSxeQ%2FDxWpVQY%3D",oauth_signature_method="HMAC-SHA1",oauth_timestamp="0",oauth_version="1.0"'
@@ -44,7 +44,7 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' }
       ).
       to_return(
-        :body => '{"id":"1","enabled":"true","user":{"id":"1","name":"user"}}',
+        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
         :status => 200,
       )
 
@@ -57,14 +57,14 @@ class TestToopher < Test::Unit::TestCase
 
   end
   def test_get_pairing_status()
-    stub_http_request(:get, "toopher-api.appspot.com:443/v1/pairings/1").
+    stub_http_request(:get, "https://toopher-api.appspot.com/v1/pairings/1").
       to_return(
-        :body => '{"id":"1","enabled":"true","user":{"id":"1","name":"paired user"}}',
+        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"paired user"}}',
         :status => 200,
       )
-    stub_http_request(:get, "toopher-api.appspot.com:443/v1/pairings/2").
+    stub_http_request(:get, "https://toopher-api.appspot.com/v1/pairings/2").
       to_return(
-        :body => '{"id":"2","enabled":"false","user":{"id":"2","name":"unpaired user"}}',
+        :body => '{"id":"2","enabled":false,"user":{"id":"2","name":"unpaired user"}}',
         :status => 200,
       )
 
@@ -83,12 +83,12 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_create_authentication_with_no_action()
-    stub_http_request(:post, "toopher-api.appspot.com:443/v1/authentication_requests/initiate").
+    stub_http_request(:post, "https://toopher-api.appspot.com/v1/authentication_requests/initiate").
       with(
         :body => { 'pairing_id' => '1', 'terminal_name' => 'term name' }
       ).
       to_return(
-        :body => '{"id":"1","pending":"false","granted":"true","automated":"true","reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
         :status => 200,
       )
 
@@ -104,14 +104,14 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_get_authentication_status()
-    stub_http_request(:get, "toopher-api.appspot.com:443/v1/authentication_requests/1").
+    stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/1").
       to_return(
-        :body => '{"id":"1","pending":"false","granted":"true","automated":"true","reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
         :status => 200,
       )
-    stub_http_request(:get, "toopher-api.appspot.com:443/v1/authentication_requests/2").
+    stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/2").
       to_return(
-        :body => '{"id":"2","pending":"true","granted":"false","automated":"false","reason":"some other reason","terminal":{"id":"2","name":"another term name"}}',
+        :body => '{"id":"2","pending":true,"granted":false,"automated":false,"reason":"some other reason","terminal":{"id":"2","name":"another term name"}}',
         :status => 200,
       )
 
