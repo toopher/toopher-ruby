@@ -4,7 +4,7 @@
 ToopherAPI Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  This project includes all the dependency libraries and handles the required OAuth and JSON functionality so you can focus on just using the API.
 
 #### Learn the Toopher API
-Make sure you visit (http://dev.toopher.com) to get acquainted with the Toopher API fundamentals.  The documentation there will tell you the details about the operations this API wrapper library provides.
+Make sure you visit [http://dev.toopher.com](http://dev.toopher.com) to get acquainted with the Toopher API fundamentals.  The documentation there will tell you the details about the operations this API wrapper library provides.
 
 #### OAuth Authentication
 
@@ -67,7 +67,7 @@ $ ruby demo/toopher_demo.ruby
 To avoid being prompted for your Toopher API key and secret, you can define them in the $TOOPHER_CONSUMER_KEY and $TOOPHER_CONSUMER_SECRET environment variables
 
 #### Known Issues / Workarouds
-When running the demo code with ruby 1.9.3, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to (http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
+When running the demo code with ruby 1.9.3, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to [this railsapps page](http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
 ```shell
 $ rvm remove 1.9.3
 $ brew install openssl
