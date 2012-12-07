@@ -4,10 +4,6 @@ require 'toopher_api'
 
 class TestToopher < Test::Unit::TestCase
   def test_constructor()
-    old_key = ENV['TOOPHER_CONSUMER_KEY']
-    old_secret = ENV['TOOPHER_CONSUMER_SECRET']
-    ENV['TOOPHER_CONSUMER_KEY'] = ''
-    ENV['TOOPHER_CONSUMER_SECRET'] = ''
 
     assert_raise ArgumentError do
       api = ToopherAPI.new
@@ -25,14 +21,6 @@ class TestToopher < Test::Unit::TestCase
       api = ToopherAPI.new('key', 'secret')
     end
 
-    ENV['TOOPHER_CONSUMER_KEY'] = 'key'
-    ENV['TOOPHER_CONSUMER_SECRET'] = 'secret'
-    assert_nothing_raised do
-      api = ToopherAPI.new()
-    end
-
-    ENV['TOOPHER_CONSUMER_KEY'] = old_key
-    ENV['TOOPHER_CONSUMER_SECRET'] = old_secret
   end
 
   def test_create_pairing_immediate_success()

@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version       = '0.0.1'
   s.date          = '2012-12-05'
   s.summary       = 'Interface to the toopher.com authentication api'
-  s.description   = 'Synchronous interface to the toopher.com authentication api.  Use em_toopher_api instead if calling from an EventMachine loop'
+  s.description   = 'Synchronous interface to the toopher.com authentication api.'
   s.authors       = ['Toopher, Inc.']
   s.email         = 'support@toopher.com'
   s.files         = ['Rakefile', 'lib/toopher_api.rb', 'test/test_toopher_api.rb', 'demo/toopher_demo.rb']

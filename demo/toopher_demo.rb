@@ -1,12 +1,19 @@
 #!/usr/bin/ruby
 require_relative '../lib/toopher_api'
 
-puts 'enter consumer key, or [ENTER] to use $TOOPHER_CONSUMER_KEY'
-key = gets
-key.chomp!
-puts 'enter consumer secret, or [ENTER] to use $TOOPHER_CONSUMER_SECRET'
-secret = gets
-secret.chomp!
+key = ENV['TOOPHER_CONSUMER_KEY']
+secret = ENV['TOOPHER_CONSUMER_SECRET']
+if key.empty? or secret.empty?
+  puts 'enter consumer credentials (set environment variables to prevent prompting):'
+  print 'TOOPHER_CONSUMER_KEY='
+  STDOUT.flush
+  key = gets
+  key.chomp!
+  print 'TOOPHER_CONSUMER_SECRET='
+  STDOUT.flush
+  secret = gets
+  secret.chomp!
+end
 
 toopher = ToopherAPI.new(key, secret)
 

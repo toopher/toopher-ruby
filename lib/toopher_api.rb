@@ -28,14 +28,16 @@ require 'oauth'
 
 class ToopherAPI
 
-  def initialize(key='',secret='',options={}, base_url = '')
-    consumer_key = key.empty? ? ENV['TOOPHER_CONSUMER_KEY'] : key
-    consumer_secret = secret.empty? ? ENV['TOOPHER_CONSUMER_SECRET'] : secret
+  DEFAULT_BASE_URL = 'https://toopher-api.appspot.com/v1/'
+
+  def initialize(key='',secret='',options={}, base_url = DEFAULT_BASE_URL)
+    consumer_key = key
+    consumer_secret = secret
 
     consumer_key.empty? and raise ArgumentError, "Toopher consumer key not supplied (try defining \$TOOPHER_CONSUMER_KEY)"
     consumer_secret.empty? and raise ArgumentError, "Toopher consumer secret not supplied (try defining \$TOOPHER_CONSUMER_SECRET)"
 
-    @base_url = base_url.empty? ? 'https://toopher-api.appspot.com/v1/' : base_url
+    @base_url = base_url
     @oauth_consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
     @oauth_options = options
   end
