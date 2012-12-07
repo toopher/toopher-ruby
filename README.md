@@ -25,37 +25,37 @@ This library makes it super simple to do the Toopher two-step.  Check it out:
 ```ruby
 require 'toopher_api'
 
-// Create an API object using your credentials
+# Create an API object using your credentials
 toopher_api = ToopherAPI.new(key, secret)
 
-// Step 1 - Pair with their phone's Toopher app
+# Step 1 - Pair with their phone's Toopher app
 pairing = toopher.pair("pairing phrase", "username@yourservice.com")
 
-// Step 2 - Authenticate a log in
+# Step 2 - Authenticate a log in
 auth_status = toopher.authenticate(pairing['id'], 'my computer')
 
-// Once they've responded you can then check the status
+# Once they've responded you can then check the status
 while(auth_status['pending']){
     auth_status = toopher.get_authentication_status(auth_status['id']);
     sleep(1);
 }
 if(auth_status['granted']){
-    // Success!
+    # Success!
 } else {
-    // user declined the authorization!
+    # user declined the authorization!
 }
 ```
 
 #### Dependencies
 ToopherAPI Ruby Client depends on the oauth and json gems.  To install:
-'''shell
+```shell
 $ gem install oauth
 $ gem install json
-'''
+```
 Additionally, you will need the webmock library if you wish to run the unit tests:
-'''shell
+```shell
 $ gem install webmock
-'''
+```
 #### Handling Errors
 If any request runs into an error a `ToopherRequestError` will be raised with more details on what went wrong.
 
@@ -68,14 +68,14 @@ To avoid being prompted for your Toopher API key and secret, you can define them
 
 #### Known Issues / Workarouds
 When running the demo code with ruby 1.9.3, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to (http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
-'''shell
+```shell
 $ rvm remove 1.9.3
 $ brew install openssl
 $ rvm install 1.9.3 --with-openssl-dir=`brew --prefix openssl`
-'''
+```
 
 #### Tests
 To run all unit tests:
-'''shell
+```shell
 $ rake test   # (or just 'rake')
-'''
+```
