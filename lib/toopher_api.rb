@@ -27,16 +27,19 @@ require 'uri'
 require 'json'
 require 'oauth'
 
+class ToopherRequestError < StandardError
+end
+
 class ToopherAPI
 
   DEFAULT_BASE_URL = 'https://toopher-api.appspot.com/v1/'
 
-  def initialize(key='',secret='',options={}, base_url = DEFAULT_BASE_URL)
+  def initialize(key,secret,options={}, base_url = DEFAULT_BASE_URL)
     consumer_key = key
     consumer_secret = secret
 
-    consumer_key.empty? and raise ArgumentError, "Toopher consumer key not supplied (try defining \$TOOPHER_CONSUMER_KEY)"
-    consumer_secret.empty? and raise ArgumentError, "Toopher consumer secret not supplied (try defining \$TOOPHER_CONSUMER_SECRET)"
+    consumer_key.empty? and raise ArgumentError, "Toopher consumer key cannot be empty!"
+    consumer_secret.empty? and raise ArgumentError, "Toopher consumer secret cannot be empty!"
 
     @base_url = base_url
     @oauth_consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
@@ -105,6 +108,10 @@ class ToopherAPI
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
     res = http.request(req)
-    return JSON.parse(res.body)
+    decoded = JSON.parse(res.body)
+    if(decoded.has_key?("error_code"))
+      raise ToopherRequestError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
+    end
+    return decoded
   end
 end

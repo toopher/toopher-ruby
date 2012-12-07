@@ -123,4 +123,16 @@ class TestToopher < Test::Unit::TestCase
     assert(auth['terminal_id'] == '2', 'wrong auth terminal id')
     assert(auth['terminal_name'] == 'another term name', 'wrong auth terminal name')
   end
+
+  def test_toopher_request_error()
+    stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/1").
+      to_return(
+        :body => '{"error_code":401,"error_message":"Not a valid OAuth signed request"}',
+        :status => 401
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+    assert_raise ToopherRequestError do
+      auth = toopher.get_authentication_status('1')
+    end
+  end
 end
