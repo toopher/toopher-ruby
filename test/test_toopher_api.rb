@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'test/unit'
 require 'webmock/test_unit'
 require 'toopher_api'
@@ -33,7 +34,7 @@ class TestToopher < Test::Unit::TestCase
       ).
       to_return(
         :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
-        :status => 200,
+        :status => 200
       )
 
       toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
@@ -48,12 +49,12 @@ class TestToopher < Test::Unit::TestCase
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/pairings/1").
       to_return(
         :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"paired user"}}',
-        :status => 200,
+        :status => 200
       )
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/pairings/2").
       to_return(
         :body => '{"id":"2","enabled":false,"user":{"id":"2","name":"unpaired user"}}',
-        :status => 200,
+        :status => 200
       )
 
       toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
@@ -77,7 +78,7 @@ class TestToopher < Test::Unit::TestCase
       ).
       to_return(
         :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
-        :status => 200,
+        :status => 200
       )
 
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
@@ -95,12 +96,12 @@ class TestToopher < Test::Unit::TestCase
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/1").
       to_return(
         :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
-        :status => 200,
+        :status => 200
       )
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/2").
       to_return(
         :body => '{"id":"2","pending":true,"granted":false,"automated":false,"reason":"some other reason","terminal":{"id":"2","name":"another term name"}}',
-        :status => 200,
+        :status => 200
       )
 
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
