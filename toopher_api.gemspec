@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors       = ['Toopher, Inc.']
   s.email         = 'support@toopher.com'
   s.files         = ['Rakefile', 'lib/toopher_api.rb', 'test/test_toopher_api.rb', 'demo/toopher_demo.rb']
-  s.homepage      = 'http://dev.toopher.org'
+  s.homepage      = 'http://dev.toopher.com'
   
   s.add_dependency('oauth', '>= 0.4.7')
   s.add_dependency('json', '>= 1.7.5')
