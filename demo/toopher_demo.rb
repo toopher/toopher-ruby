@@ -27,10 +27,10 @@ user.chomp!
 
 pairing = toopher.pair(phrase, user)
 
-while(!pairing['enabled'])
+while(!pairing.enabled)
   puts 'waiting for authorization...'
   sleep(1)
-  pairing = toopher.get_pairing_status(pairing['id'])
+  pairing = toopher.get_pairing_status(pairing.id)
 end
 
 puts 'paired successfully!'
@@ -45,12 +45,12 @@ while (true)
   action.chomp!
 
   puts 'sending authentication request...'
-  auth = toopher.authenticate(pairing['id'], terminal_name, action)
+  auth = toopher.authenticate(pairing.id, terminal_name, action)
 
   while(auth['pending'])
     puts 'waiting for authentication...'
     sleep(1)
-    auth = toopher.get_authentication_status(auth['id'])
+    auth = toopher.get_authentication_status(auth.id)
   end
 
   puts "Successfully authorized action '" + action + "'.  Enter another action to authorize again, or [Ctrl-C] to exit"

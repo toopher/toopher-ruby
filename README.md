@@ -1,7 +1,7 @@
 # ToopherAPI Ruby Client
 
 #### Introduction
-ToopherAPI Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  This project includes all the dependency libraries and handles the required OAuth and JSON functionality so you can focus on just using the API.
+ToopherAPI Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
 
 #### Learn the Toopher API
 Make sure you visit [http://dev.toopher.com](http://dev.toopher.com) to get acquainted with the Toopher API fundamentals.  The documentation there will tell you the details about the operations this API wrapper library provides.
@@ -32,14 +32,14 @@ toopher_api = ToopherAPI.new(key, secret)
 pairing = toopher.pair("pairing phrase", "username@yourservice.com")
 
 # Step 2 - Authenticate a log in
-auth_status = toopher.authenticate(pairing['id'], 'my computer')
+auth_status = toopher.authenticate(pairing.id, 'my computer')
 
 # Once they've responded you can then check the status
-while(auth_status['pending']){
-    auth_status = toopher.get_authentication_status(auth_status['id']);
+while(auth_status.pending){
+    auth_status = toopher.get_authentication_status(auth_status.id);
     sleep(1);
 }
-if(auth_status['granted']){
+if(auth_status.granted){
     # Success!
 } else {
     # user declined the authorization!
@@ -47,7 +47,7 @@ if(auth_status['granted']){
 ```
 
 #### Dependencies
-ToopherAPI Ruby Client depends on the oauth and json gems.  To install:
+'ToopherAPI Ruby Client depends on the oauth and json gems.  'gem' will make sure these are installed.  To install manually:
 ```shell
 $ gem install oauth
 $ gem install json

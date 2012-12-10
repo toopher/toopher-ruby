@@ -34,6 +34,12 @@ class ToopherAPI
 
   DEFAULT_BASE_URL = 'https://toopher-api.appspot.com/v1/'
 
+  # Creates a Toopher API consumer
+  #
+  # @param [String] key Your Toopher API Key
+  # @param [String] secret Your Toopher API Secret
+  # @param [Hash] options OAuth Options hash.
+  # @param [string] base_url The base URL to use for the Toopher API
   def initialize(key,secret,options={}, base_url = DEFAULT_BASE_URL)
     consumer_key = key
     consumer_secret = secret
@@ -46,15 +52,22 @@ class ToopherAPI
     @oauth_options = options
   end
 
+  # Create the pairing between a particular user and their mobile device
+  #
+  # @param [String] pairing_phrase The pairing phrase (from the user's mobile device).
+  # @param [String] user_name User name
+  #
+  # @return [PairingStatus] Information about the pairing request
   def pair(pairing_phrase, user_name)
-    return make_pair_response(post('pairings/create', {
+    return PairingStatus.new(post('pairings/create', {
       'pairing_phrase' => pairing_phrase,
       'user_name' => user_name
     }))
   end
 
+  # Check on the status of a previous pairing request
   def get_pairing_status(pairing_request_id)
-    return make_pair_response(get('pairings/' + pairing_request_id))
+    return PairingStatus.new(get('pairings/' + pairing_request_id))
   end
 
   def authenticate(pairing_id, terminal_name, action_name = '')
@@ -63,33 +76,14 @@ class ToopherAPI
       'terminal_name' => terminal_name
     }
     action_name.empty? or (parameters['action_name'] = action_name)
-    return make_auth_response(post('authentication_requests/initiate', parameters))
+    return AuthenticationStatus.new(post('authentication_requests/initiate', parameters))
   end
 
   def get_authentication_status(authentication_request_id)
-    return make_auth_response(get('authentication_requests/' + authentication_request_id))
+    return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
   end
 
   private
-  def make_pair_response(result)
-    return {
-      'id' => result['id'],
-      'enabled' => result['enabled'],
-      'user_id' => result['user']['id'],
-      'user_name' => result['user']['name']
-    }
-  end
-  def make_auth_response(result)
-    return {
-      'id' => result['id'],
-      'pending' => result['pending'],
-      'granted' => result['granted'],
-      'automated' => result['automated'],
-      'reason' => result['reason'],
-      'terminal_id' => result['terminal']['id'],
-      'terminal_name' => result['terminal']['name']
-    }
-  end
   def post(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
@@ -113,5 +107,39 @@ class ToopherAPI
       raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
     end
     return decoded
+  end
+end
+
+class PairingStatus
+  attr_accessor :id
+  attr_accessor :enabled
+  attr_accessor :user_id
+  attr_accessor :user_name
+
+  def initialize(json_obj)
+    @id = json_obj['id']
+    @enabled = json_obj['enabled']
+    @user_id = json_obj['user']['id']
+    @user_name = json_obj['user']['name']
+  end
+end
+
+class AuthenticationStatus
+  attr_accessor :id
+  attr_accessor :pending
+  attr_accessor :granted
+  attr_accessor :automated
+  attr_accessor :reason
+  attr_accessor :terminal_id
+  attr_accessor :terminal_name
+
+  def initialize(json_obj)
+    @id = json_obj['id']
+    @pending = json_obj['pending']
+    @granted = json_obj['granted']
+    @automated = json_obj['automated']
+    @reason = json_obj['reason']
+    @terminal_id = json_obj['terminal']['id']
+    @terminal_name = json_obj['terminal']['name']
   end
 end
