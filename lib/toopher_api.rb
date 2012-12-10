@@ -27,7 +27,7 @@ require 'uri'
 require 'json'
 require 'oauth'
 
-class ToopherRequestError < StandardError
+class ToopherApiError < StandardError
 end
 
 class ToopherAPI
@@ -110,7 +110,7 @@ class ToopherAPI
     res = http.request(req)
     decoded = JSON.parse(res.body)
     if(decoded.has_key?("error_code"))
-      raise ToopherRequestError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
+      raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
     end
     return decoded
   end

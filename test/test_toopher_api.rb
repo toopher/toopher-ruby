@@ -131,7 +131,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 401
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
-    assert_raise ToopherRequestError do
+    assert_raise ToopherApiError do
       auth = toopher.get_authentication_status('1')
     end
   end

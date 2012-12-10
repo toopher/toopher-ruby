@@ -57,7 +57,7 @@ Additionally, you will need the webmock library if you wish to run the unit test
 $ gem install webmock
 ```
 #### Handling Errors
-If any request runs into an error a `ToopherRequestError` will be raised with more details on what went wrong.
+If any request runs into an error a `ToopherApiError` will be raised with more details on what went wrong.
 
 #### Example code
 Check out demo/toopher_demo.rb for an example program that walks you through the whole process!  Simply execute the script as follows:
