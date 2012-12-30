@@ -47,7 +47,7 @@ while (true)
   puts 'sending authentication request...'
   auth = toopher.authenticate(pairing.id, terminal_name, action)
 
-  while(auth['pending'])
+  while(auth.pending)
     puts 'waiting for authentication...'
     sleep(1)
     auth = toopher.get_authentication_status(auth.id)
