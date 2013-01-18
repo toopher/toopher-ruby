@@ -104,6 +104,10 @@ class ToopherAPI
     return get_raw('authentication_requests/' + authentication_request_id + '/cancel').code == '200'
   end
 
+  def send_authentication_otp(authentication_request_id, otp)
+    return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id + '/otp_auth/' + otp))
+  end
+
   private
   def post(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
