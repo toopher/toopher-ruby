@@ -19,7 +19,7 @@ while secret.nil? or secret.empty?
   secret.chomp!
 end
 
-toopher = ToopherAPI.new(key, secret, {}, 'http://10.0.1.3:8000/v1/')
+toopher = ToopherAPI.new(key, secret)
 
 puts 'STEP 1: Pair device'
 puts 'enter pairing phrase:'
