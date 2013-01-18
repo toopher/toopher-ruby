@@ -100,10 +100,19 @@ class ToopherAPI
     return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
   end
 
+  # Cancel a currently pending authentication request
+  #
+  # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
+  # @return [Boolean] True if the request was successfully cancelled
   def cancel_authentication_request(authentication_request_id)
     return get_raw('authentication_requests/' + authentication_request_id + '/cancel').code == '200'
   end
 
+  # Send a one-time-password to validate an existing authentication request
+  #
+  # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
+  # @param [String] otp The One-Time-Password value generated on the user's mobile device
+  # @return [AuthenticationStatus] Information about the authentication request
   def send_authentication_otp(authentication_request_id, otp)
     return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id + '/otp_auth/' + otp))
   end
