@@ -19,7 +19,12 @@ while secret.nil? or secret.empty?
   secret.chomp!
 end
 
-toopher = ToopherAPI.new(key, secret)
+base_url = ENV['TOOPHER_BASE_URL']
+if base_url.nil? or base_url.empty?
+  base_url = nil
+end
+
+toopher = ToopherAPI.new(key, secret, {}, base_url)
 
 puts 'STEP 1: Pair device'
 puts 'enter pairing phrase:'

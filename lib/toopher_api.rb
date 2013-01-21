@@ -105,7 +105,7 @@ class ToopherAPI
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
   # @return [Boolean] True if the request was successfully cancelled
   def cancel_authentication_request(authentication_request_id)
-    return get_raw('authentication_requests/' + authentication_request_id + '/cancel').code == '200'
+    return post_raw('authentication_requests/' + authentication_request_id + '/cancel', {}).code == '200'
   end
 
   # Send a one-time-password to validate an existing authentication request
@@ -114,15 +114,20 @@ class ToopherAPI
   # @param [String] otp The One-Time-Password value generated on the user's mobile device
   # @return [AuthenticationStatus] Information about the authentication request
   def send_authentication_otp(authentication_request_id, otp)
-    return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id + '/otp_auth/' + otp))
+    return AuthenticationStatus.new(post('authentication_requests/' + authentication_request_id + '/otp_auth', {
+      'otp' => otp,
+    }))
   end
 
   private
   def post(endpoint, parameters)
+    return response2json(post_raw(endpoint, parameters))
+  end
+  def post_raw(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
     req.set_form_data(parameters)
-    return response2json(request(url, req))
+    return request(url, req)
   end
 
   def get(endpoint)
