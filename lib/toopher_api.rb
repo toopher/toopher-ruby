@@ -84,10 +84,11 @@ class ToopherAPI
   # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
   #
   # @return [AuthenticationStatus] Information about the authentication request
-  def authenticate(pairing_id, terminal_name, action_name = '')
+  def authenticate(pairing_id, terminal_name = '', action_name = '', automation_allowed=true)
     parameters = {
       'pairing_id' => pairing_id,
-      'terminal_name' => terminal_name
+      'terminal_name' => terminal_name,
+      'automation_allowed' => automation_allowed
     }
     action_name.empty? or (parameters['action_name'] = action_name)
     return AuthenticationStatus.new(post('authentication_requests/initiate', parameters))
