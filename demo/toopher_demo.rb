@@ -43,7 +43,7 @@ puts 'STEP 2: Authenticate login'
 puts 'enter terminal name:'
 terminal_name = gets;
 terminal_name.chomp!
-puts 'enter action name, or [ENTER] for none:'
+puts 'enter action name, or press [ENTER] for the default action ("log in"):'
 while (true)
   action = gets;
   action.chomp!
@@ -57,6 +57,8 @@ while (true)
     auth = toopher.get_authentication_status(auth.id)
   end
 
-  puts "Successfully authorized action '" + action + "'.  Enter another action to authorize again, or [Ctrl-C] to exit"
+  automation = auth.automated ? 'automatically ' : ''
+  result = auth.granted ? 'granted' : 'denied'
+  puts 'The request was ' + automation + result + "! Enter another action to authorize again, or [Ctrl-C] to exit"
 end
 
