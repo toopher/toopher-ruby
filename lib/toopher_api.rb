@@ -112,8 +112,22 @@ class ToopherAPI
     }))
   end
 
+
+
+
+  # Cancel a currently pending authentication request
+  #
+  # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
+  # @return [Boolean] True if the request was successfully cancelled
+  def cancel_authentication_request(authentication_request_id)
+    return post_raw('authentication_requests/' + authentication_request_id + '/cancel', {}).code == '200'
+  end
+
   private
   def post(endpoint, parameters)
+    return response2json(post_raw(endpoint, parameters))
+  end
+  def post_raw(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
     req.set_form_data(parameters)
@@ -121,21 +135,28 @@ class ToopherAPI
   end
 
   def get(endpoint)
+    return response2json(get_raw(endpoint))
+  end
+
+  def get_raw(endpoint)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Get.new(url.path)
     return request(url, req)
+  end
+
+  def response2json(res)
+    decoded = JSON.parse(res.body)
+    if(decoded.has_key?("error_code"))
+      raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
+    end
+    return decoded
   end
 
   def request(url, req)
     http = Net::HTTP::new(url.host, url.port)
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
-    res = http.request(req)
-    decoded = JSON.parse(res.body)
-    if(decoded.has_key?("error_code"))
-      raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
-    end
-    return decoded
+    return http.request(req)
   end
 end
 
