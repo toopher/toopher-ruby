@@ -80,3 +80,5 @@ To run all unit tests:
 ```shell
 $ rake test   # (or just 'rake')
 ```
+
+[![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
