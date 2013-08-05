@@ -43,8 +43,27 @@ class TestToopher < Test::Unit::TestCase
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user', 'bad user name')
-
+      assert(pairing.raw['user']['name'] == 'user', 'could not access raw data')
   end
+
+  def test_create_pairing_with_optional_arg()
+    stub_http_request(:post, "https://toopher-api.appspot.com/v1/pairings/create").
+      with(
+        :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' , 'test_param' => 'foo'}
+      ).
+      to_return(
+        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
+        :status => 200
+      )
+
+      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+      pairing = toopher.pair('immediate_pair', 'user', :test_param => 'foo')
+      assert(pairing.id == '1', 'bad pairing id')
+      assert(pairing.enabled == true, 'pairing not enabled')
+      assert(pairing.user_id == '1', 'bad user id')
+      assert(pairing.user_name == 'user', 'bad user name')
+  end
+
   def test_get_pairing_status()
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/pairings/1").
       to_return(
@@ -92,6 +111,27 @@ class TestToopher < Test::Unit::TestCase
     assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
   end
 
+  def test_create_authentication_with_optional_arg()
+    stub_http_request(:post, "https://toopher-api.appspot.com/v1/authentication_requests/initiate").
+      with(
+        :body => { 'pairing_id' => '1', 'terminal_name' => 'term name', 'test_param' => 'foo' }
+      ).
+      to_return(
+        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' })
+    auth = toopher.authenticate('1', 'term name', '', {'test_param' => 'foo'})
+    assert(auth.id == '1', 'wrong auth id')
+    assert(auth.pending == false, 'wrong auth pending')
+    assert(auth.granted == true, 'wrong auth granted')
+    assert(auth.automated == true, 'wrong auth automated')
+    assert(auth.reason == 'some reason', 'wrong auth reason')
+    assert(auth.terminal_id == '1', 'wrong auth terminal id')
+    assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
+  end
+
   def test_get_authentication_status()
     stub_http_request(:get, "https://toopher-api.appspot.com/v1/authentication_requests/1").
       to_return(
@@ -113,6 +153,7 @@ class TestToopher < Test::Unit::TestCase
     assert(auth.reason == 'some reason', 'wrong auth reason')
     assert(auth.terminal_id == '1', 'wrong auth terminal id')
     assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
+    assert(auth.raw['terminal']['name'] == 'term name', 'could not access raw data')
 
     auth = toopher.get_authentication_status('2')
     assert(auth.id == '2', 'wrong auth id')
@@ -122,6 +163,7 @@ class TestToopher < Test::Unit::TestCase
     assert(auth.reason == 'some other reason', 'wrong auth reason')
     assert(auth.terminal_id == '2', 'wrong auth terminal id')
     assert(auth.terminal_name == 'another term name', 'wrong auth terminal name')
+    assert(auth.raw['terminal']['name'] == 'another term name', 'could not access raw data')
   end
 
   def test_toopher_request_error()

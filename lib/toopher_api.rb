@@ -61,11 +61,11 @@ class ToopherAPI
   # @param [String] user_name A human recognizable string which represents the user making the request (usually their username). This is displayed to the user on the mobile app when authenticating.
   #
   # @return [PairingStatus] Information about the pairing request
-  def pair(pairing_phrase, user_name)
+  def pair(pairing_phrase, user_name, options = {})
     return PairingStatus.new(post('pairings/create', {
       'pairing_phrase' => pairing_phrase,
       'user_name' => user_name
-    }))
+    }.merge(options)))
   end
 
   # Check on the status of a previous pairing request
@@ -84,13 +84,13 @@ class ToopherAPI
   # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
   #
   # @return [AuthenticationStatus] Information about the authentication request
-  def authenticate(pairing_id, terminal_name, action_name = '')
+  def authenticate(pairing_id, terminal_name = '', action_name = '', options = {})
     parameters = {
       'pairing_id' => pairing_id,
       'terminal_name' => terminal_name
     }
     action_name.empty? or (parameters['action_name'] = action_name)
-    return AuthenticationStatus.new(post('authentication_requests/initiate', parameters))
+    return AuthenticationStatus.new(post('authentication_requests/initiate', parameters.merge(options)))
   end
 
   # Check on the status of a previous authentication request
@@ -146,11 +146,16 @@ class PairingStatus
   #   @return [String] The human recognizable user name associated with the given id.
   attr_accessor :user_name
 
+  # @!attribute raw
+  #   @return [hash] The raw data returned from the Toopher API
+  attr_accessor :raw
+
   def initialize(json_obj)
     @id = json_obj['id']
     @enabled = json_obj['enabled']
     @user_id = json_obj['user']['id']
     @user_name = json_obj['user']['name']
+    @raw = json_obj
   end
 end
 
@@ -185,6 +190,10 @@ class AuthenticationStatus
   #   @return [String] The human recognizable terminal name associated with the given id.
   attr_accessor :terminal_name
 
+  # @!attribute raw
+  #   @return [hash] The raw data returned from the Toopher API
+  attr_accessor :raw
+
   def initialize(json_obj)
     @id = json_obj['id']
     @pending = json_obj['pending']
@@ -193,5 +202,6 @@ class AuthenticationStatus
     @reason = json_obj['reason']
     @terminal_id = json_obj['terminal']['id']
     @terminal_name = json_obj['terminal']['name']
+    @raw = json_obj
   end
 end
