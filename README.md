@@ -53,8 +53,9 @@ end
 $ gem install oauth
 $ gem install json
 ```
-Additionally, you will need the webmock library if you wish to run the unit tests:
+Additionally, you will need the yard and webmock libraries if you wish to run the unit tests:
 ```shell
+$ gem install yard
 $ gem install webmock
 ```
 #### Handling Errors
