@@ -5,7 +5,6 @@ require 'toopher_api'
 
 class TestToopher < Test::Unit::TestCase
   def test_constructor()
-
     assert_raise ArgumentError do
       api = ToopherAPI.new
     end
@@ -21,7 +20,6 @@ class TestToopher < Test::Unit::TestCase
     assert_nothing_raised do
       api = ToopherAPI.new('key', 'secret')
     end
-
   end
 
   def test_create_pairing_immediate_success()
@@ -176,5 +174,22 @@ class TestToopher < Test::Unit::TestCase
     assert_raise ToopherApiError do
       auth = toopher.get_authentication_status('1')
     end
+  end
+
+  def test_toopher_api_returns_ssl_error()
+    WebMock.allow_net_connect!
+    key = ENV['TOOPHER_CONSUMER_KEY']
+    secret = ENV['TOOPHER_CONSUMER_SECRET']
+
+    toopher = ToopherAPI.new(key, secret)
+    assert_nothing_raised do
+      toopher.get_pairing_status('0b56d487-9674-4ba9-a3c3-91b833806c2b')
+    end
+
+    toopher = ToopherAPI.new(key, secret, {}, 'https://sethholloway.com/')
+    assert_raise OpenSSL::SSL::SSLError do
+      toopher.get_pairing_status('0b56d487-9674-4ba9-a3c3-91b833806c2b')
+    end
+    WebMock.disable_net_connect!
   end
 end
