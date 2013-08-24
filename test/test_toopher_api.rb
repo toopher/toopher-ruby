@@ -194,6 +194,7 @@ class TestToopher < Test::Unit::TestCase
     end
     WebMock.disable_net_connect!
   end
-end
 =end
+
+end
 
