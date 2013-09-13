@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'toopher_api'
-  s.version       = '1.0.5'
+  s.version       = '1.0.6'
   s.date          = '2013-08-12'
   s.summary       = 'Interface to the toopher.com authentication api'
   s.description   = 'Synchronous interface to the toopher.com authentication api.'
@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.email         = 'support@toopher.com'
   s.files         = ['Rakefile', 'lib/toopher_api.rb', 'test/test_toopher_api.rb', 'demo/toopher_demo.rb']
   s.homepage      = 'http://dev.toopher.com'
-  
+
   s.add_dependency('oauth', '>= 0.4.7')
   s.add_dependency('json', '>= 1.7.5')
 

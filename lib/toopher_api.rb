@@ -33,6 +33,8 @@ end
 
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherAPI
+  # Version of the library
+  VERSION = '1.0.6'
 
   # Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
   DEFAULT_BASE_URL = 'https://toopher-api.appspot.com/v1/'
@@ -115,6 +117,7 @@ class ToopherAPI
   end
 
   def request(url, req)
+    req['User-Agent'] = "Toopher-Ruby/#{VERSION}"
     http = Net::HTTP::new(url.host, url.port)
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
