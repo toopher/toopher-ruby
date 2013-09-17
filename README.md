@@ -1,5 +1,7 @@
 # ToopherAPI Ruby Client
 
+[![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
+
 #### Introduction
 ToopherAPI Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
 
@@ -81,4 +83,3 @@ To run all unit tests:
 $ rake test   # (or just 'rake')
 ```
 
-[![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
