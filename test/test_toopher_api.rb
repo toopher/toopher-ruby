@@ -177,4 +177,19 @@ class TestToopher < Test::Unit::TestCase
       auth = toopher.get_authentication_status('1')
     end
   end
+
+  def test_version_string_exists()
+    major, minor, patch = ToopherAPI::VERSION.split('.')
+    assert(major >= '1', 'version string (major level) is invalid')
+    assert(minor >= '0', 'version string (minor level) is invalid')
+    assert(patch >= '0', 'version string (patch level) is invalid')
+    assert(ToopherAPI::VERSION >= '1.0.6', 'version string does not exist')
+  end
+
+  def test_gemspec_version_matches_version_string()
+    version_string = File.open('toopher_api.gemspec').grep(/version/).first
+    gemspec_version = /version\s+=\s+'([\d.]+)'/.match(version_string).captures.first
+    assert(ToopherAPI::VERSION == gemspec_version, "version strings do not match: library = #{ToopherAPI::VERSION} and gemspec = #{gemspec_version}")
+  end
 end
+
