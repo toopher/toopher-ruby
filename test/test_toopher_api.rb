@@ -179,6 +179,10 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_version_string_exists()
+    major, minor, patch = ToopherAPI::VERSION.split('.')
+    assert(major >= '1', 'version string (major level) is invalid')
+    assert(minor >= '0', 'version string (minor level) is invalid')
+    assert(patch >= '0', 'version string (patch level) is invalid')
     assert(ToopherAPI::VERSION >= '1.0.6', 'version string does not exist')
   end
 
