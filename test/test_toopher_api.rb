@@ -238,10 +238,40 @@ class TestToopher < Test::Unit::TestCase
     end
   end
 
-  def test_no_user_to_enable_raises_correct_error()
-    stub_http_request(:get, "https://toopher.test/v1/users").
+  def test_one_user_to_enable_raises_no_error()
+    stub_http_request(:get, "https://toopher.test/v1/users?name=user").
       to_return(
-        :body => '{ }',
+        :body => [ {
+            "requester" => {
+              "name" => "toopher.test",
+              "id" => "requester1"
+            },
+            "id" => "user1",
+            "name" => "user"
+          } ].to_json,
+        :status => 200
+      )
+    stub_http_request(:post, "https://toopher.test/v1/users/user1").
+      to_return(
+        :body => {
+          "disable_toopher_auth" => true,
+          "name" => "test",
+          "requester" => {
+            "name" => "toopher.com",
+            "id" => "requester1"
+          },
+          "id" => "user1",
+        }.to_json,
+        :status => 200
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+  end
+
+  def test_no_user_to_enable_raises_correct_error()
+    stub_http_request(:get, "https://toopher.test/v1/users?name=user").
+      to_return(
+        :body => [ ].to_json,
         :status => 200
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
@@ -251,9 +281,26 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_multiple_users_to_enable_raises_correct_error()
-    stub_http_request(:get, "https://toopher.test/v1/users").
+    stub_http_request(:get, "https://toopher.test/v1/users?name=user").
       to_return(
-        :body => '{ "user1" : "1", "user2" : "2" }',
+        :body => [
+          {
+            "requester" => {
+              "name" => "toopher.test",
+              "id" => "requester1"
+            },
+            "id" => "user1",
+            "name" => "user"
+          },
+          {
+            "requester" => {
+              "name" => "toopher.test",
+              "id" => "requester1",
+            },
+            "id" => "user2",
+            "name" => "user"
+          }
+        ].to_json,
         :status => 200
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
