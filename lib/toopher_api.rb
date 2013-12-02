@@ -129,7 +129,7 @@ class ToopherAPI
     result = post(uri, params)
   end
 
-  def set_enable_toopher_for_user(user_name, enabled)
+  def set_toopher_enabled_for_user(user_name, enabled)
     uri = 'users'
     users = get(uri, {"name" => user_name})
     if users.count > 1

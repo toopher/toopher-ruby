@@ -265,7 +265,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+    auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
   end
 
   def test_no_user_to_enable_raises_correct_error()
@@ -276,7 +276,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+      auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
     end
   end
 
@@ -305,7 +305,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+      auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
     end
   end
 
