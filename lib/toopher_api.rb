@@ -129,8 +129,8 @@ class ToopherAPI
   end
 
   def set_enable_toopher_for_user(user_name, enabled)
-    uri = 'users?' + "name=#{user_name}"
-    users = get(uri)
+    uri = 'users'
+    users = get(uri, {"name" => user_name})
     if users.count > 1
       raise ToopherApiError, "Multiple users with name = #{user_name}"
     elsif users.count == 0
@@ -149,9 +149,13 @@ class ToopherAPI
     return request(url, req)
   end
 
-  def get(endpoint)
+  def get(endpoint, parameters={})
     url = URI.parse(@base_url + endpoint)
-    req = Net::HTTP::Get.new(url.path)
+    if parameters.empty?
+      req = Net::HTTP::Get.new(url.path)
+    else
+      req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(parameters))
+    end
     return request(url, req)
   end
 
