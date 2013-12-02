@@ -166,7 +166,7 @@ class ToopherAPI
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
     res = http.request(req)
     decoded = JSON.parse(res.body)
-    parse_request_error(decoded) if res.code.to_i > 300
+    parse_request_error(decoded) if res.code.to_i >= 400
     return decoded
   end
 
