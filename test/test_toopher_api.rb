@@ -205,7 +205,7 @@ class TestToopher < Test::Unit::TestCase
   def test_unknown_terminal_raises_correct_error()
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       to_return(
-        :body => '{"error_code":706,"error_message":"unknown terminal"}',
+        :body => '{"error_code":706, "error_message":"unknown terminal"}',
         :status => 409
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
@@ -217,7 +217,7 @@ class TestToopher < Test::Unit::TestCase
   def test_disabled_pairing_raises_correct_error()
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       to_return(
-        :body => '{"error_code":601,"error_message":"pairing has been deactivated"}',
+        :body => '{"error_code":601, "error_message":"pairing has been deactivated"}',
         :status => 601
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
@@ -229,7 +229,7 @@ class TestToopher < Test::Unit::TestCase
   def test_unauthorized_pairing_raises_correct_error()
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       to_return(
-        :body => '{"error_code":601,"error_message":"pairing has not been authorized"}',
+        :body => '{"error_code":601, "error_message":"pairing has not been authorized"}',
         :status => 601
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
