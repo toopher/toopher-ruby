@@ -162,6 +162,11 @@ class ToopherAPI
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
     res = http.request(req)
     decoded = JSON.parse(res.body)
+    parse_request_error(decoded) if res.code.to_i > 300
+    return decoded
+  end
+
+  def parse_request_error(decoded)
     if(decoded.has_key?("error_code"))
       error_code, error_message = decoded['error_code'], decoded['error_message']
       if error_code == 704
@@ -176,7 +181,6 @@ class ToopherAPI
         raise ToopherApiError,"Error code #{error_code.to_s} : #{error_message}"
       end
     end
-    return decoded
   end
 end
 
