@@ -31,6 +31,18 @@ require 'oauth'
 class ToopherApiError < StandardError
 end
 
+class UserDisabledError < ToopherApiError
+end
+
+class UserUnknownError < ToopherApiError
+end
+
+class TerminalUnknownError < ToopherApiError
+end
+
+class PairingDeactivatedError< ToopherApiError
+end
+
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherAPI
   # Version of the library
@@ -102,6 +114,33 @@ class ToopherAPI
     return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
   end
 
+  def authenticate_by_user_name(user_name, terminal_name_extra, action_name = '', options = {})
+    options[:user_name] = user_name
+    options[:terminal_name_extra] = terminal_name_extra
+    return authenticate('', '', action_name, options)
+  end
+
+  def create_user_terminal(user_name, terminal_name, requester_terminal_id)
+    uri = 'user_terminals/create'
+    params = {:user_name => user_name,
+              :name => terminal_name,
+              :name_extra => requester_terminal_id}
+    result = post(uri, params)
+  end
+
+  def set_enable_toopher_for_user(user_name, enabled)
+    uri = 'users?' + "name=#{user_name}"
+    users = get(uri)
+    if users.count > 1
+      raise ToopherApiError, 'Multiple users with name = #{user_name}'
+    elsif users.count == 0
+      raise ToopherApiError, 'No users with name = #{user_name}'
+    end
+    uri = 'users/' + users[0]['id']
+    params = {'disable_toopher_auth' => !!enabled}
+    result = post(uri, params)
+  end
+
   private
   def post(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
@@ -124,7 +163,18 @@ class ToopherAPI
     res = http.request(req)
     decoded = JSON.parse(res.body)
     if(decoded.has_key?("error_code"))
-      raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
+      error_code, error_message = decoded['error_code'], decoded['error_message']
+      if error_code == 704
+        raise UserDisabledError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_code == 705
+        raise UserUnknownError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_code == 706
+        raise TerminalUnknownError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_message =~ /pairing has not been authorized|pairing has been deactivated/i
+        raise PairingDeactivatedError, "Error code #{error_code.to_s} : #{error_message}"
+      else
+        raise ToopherApiError,"Error code #{error_code.to_s} : #{error_message}"
+      end
     end
     return decoded
   end
