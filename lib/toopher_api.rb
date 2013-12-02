@@ -137,7 +137,7 @@ class ToopherAPI
       raise ToopherApiError, "No users with name = #{user_name}"
     end
     uri = 'users/' + users[0]['id']
-    params = {'disable_toopher_auth' => !!enabled}
+    params = {'disable_toopher_auth' => !enabled}
     result = post(uri, params)
   end
 
