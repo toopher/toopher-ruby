@@ -92,7 +92,7 @@ rescue UnknownTerminalError
     # This user has not assigned a "Friendly Name" to this terminal identifier.
     # Prompt them to enter a terminal name, then submit that "friendly name" to
     # the Toopher API:
-    #   api.assign_user_friendly_name_to_terminal(user_name, terminal_friendly_name, terminal_identifier)
+    #   api.create_user_terminal(user_name, terminal_friendly_name, terminal_identifier)
     # Afterwards, re-try authentication
 rescue PairingDeactivatedError
     # this user does not have an active pairing,
