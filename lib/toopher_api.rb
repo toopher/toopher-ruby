@@ -31,6 +31,7 @@ require 'oauth'
 class ToopherApiError < StandardError
 end
 
+# Exceptions that can be used for control flow when using zero-storage
 class UserDisabledError < ToopherApiError
 end
 
@@ -57,7 +58,7 @@ class ToopherAPI
   # @param [String] secret Your Toopher API Secret
   # @param [Hash] options OAuth Options hash.
   # @param [string] base_url The base URL to use for the Toopher API
-  def initialize(key,secret,options={}, base_url = DEFAULT_BASE_URL)
+  def initialize(key, secret, options = {}, base_url = DEFAULT_BASE_URL)
     consumer_key = key
     consumer_secret = secret
 
@@ -149,7 +150,7 @@ class ToopherAPI
     return request(url, req)
   end
 
-  def get(endpoint, parameters={})
+  def get(endpoint, parameters = {})
     url = URI.parse(@base_url + endpoint)
     if parameters.empty?
       req = Net::HTTP::Get.new(url.path)
