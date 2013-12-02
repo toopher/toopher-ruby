@@ -34,10 +34,10 @@ end
 class UserDisabledError < ToopherApiError
 end
 
-class UserUnknownError < ToopherApiError
+class UnknownUserError < ToopherApiError
 end
 
-class TerminalUnknownError < ToopherApiError
+class UnknownTerminalError < ToopherApiError
 end
 
 class PairingDeactivatedError< ToopherApiError
@@ -132,9 +132,9 @@ class ToopherAPI
     uri = 'users?' + "name=#{user_name}"
     users = get(uri)
     if users.count > 1
-      raise ToopherApiError, 'Multiple users with name = #{user_name}'
+      raise ToopherApiError, "Multiple users with name = #{user_name}"
     elsif users.count == 0
-      raise ToopherApiError, 'No users with name = #{user_name}'
+      raise ToopherApiError, "No users with name = #{user_name}"
     end
     uri = 'users/' + users[0]['id']
     params = {'disable_toopher_auth' => !!enabled}
@@ -167,9 +167,9 @@ class ToopherAPI
       if error_code == 704
         raise UserDisabledError, "Error code #{error_code.to_s} : #{error_message}"
       elsif error_code == 705
-        raise UserUnknownError, "Error code #{error_code.to_s} : #{error_message}"
+        raise UnknownUserError, "Error code #{error_code.to_s} : #{error_message}"
       elsif error_code == 706
-        raise TerminalUnknownError, "Error code #{error_code.to_s} : #{error_message}"
+        raise UnknownTerminalError, "Error code #{error_code.to_s} : #{error_message}"
       elsif error_message =~ /pairing has not been authorized|pairing has been deactivated/i
         raise PairingDeactivatedError, "Error code #{error_code.to_s} : #{error_message}"
       else

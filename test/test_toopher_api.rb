@@ -197,7 +197,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 409
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise UserUnknownError do
+    assert_raise UnknownUserError do
       auth_request = toopher.authenticate_by_user_name('unknown user', 'terminal name')
     end
   end
@@ -209,7 +209,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 409
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise TerminalUnknownError do
+    assert_raise UnknownTerminalError do
       auth_request = toopher.authenticate_by_user_name('user', 'unknown terminal name')
     end
   end
