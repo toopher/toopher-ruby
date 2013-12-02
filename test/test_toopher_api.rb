@@ -178,6 +178,90 @@ class TestToopher < Test::Unit::TestCase
     end
   end
 
+  def test_disabled_user_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => '{"error_code":704,"error_message":"disabled user"}',
+        :status => 409
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise UserDisabledError do
+      auth_request = toopher.authenticate_by_user_name('disabled user', 'terminal name')
+    end
+  end
+
+  def test_unknown_user_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => '{"error_code":705,"error_message":"disabled user"}',
+        :status => 409
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise UserUnknownError do
+      auth_request = toopher.authenticate_by_user_name('unknown user', 'terminal name')
+    end
+  end
+
+  def test_unknown_terminal_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => '{"error_code":706,"error_message":"unknown terminal"}',
+        :status => 409
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise TerminalUnknownError do
+      auth_request = toopher.authenticate_by_user_name('user', 'unknown terminal name')
+    end
+  end
+
+  def test_disabled_pairing_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => '{"error_code":601,"error_message":"pairing has been deactivated"}',
+        :status => 601
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise PairingDeactivatedError do
+      auth_request = toopher.authenticate_by_user_name('user', 'terminal name')
+    end
+  end
+
+  def test_unauthorized_pairing_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => '{"error_code":601,"error_message":"pairing has not been authorized"}',
+        :status => 601
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise PairingDeactivatedError do
+      auth_request = toopher.authenticate_by_user_name('user', 'terminal name')
+    end
+  end
+
+  def test_no_user_to_enable_raises_correct_error()
+    stub_http_request(:get, "https://toopher.test/v1/users").
+      to_return(
+        :body => '{ }',
+        :status => 200
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise ToopherApiError do
+      auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+    end
+  end
+
+  def test_multiple_users_to_enable_raises_correct_error()
+    stub_http_request(:get, "https://toopher.test/v1/users").
+      to_return(
+        :body => '{ "user1" : "1", "user2" : "2" }',
+        :status => 200
+      )
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_raise ToopherApiError do
+      auth_request = toopher.set_enable_toopher_for_user('user', 'true')
+    end
+  end
+
   def test_version_string_exists()
     major, minor, patch = ToopherAPI::VERSION.split('.')
     assert(major >= '1', 'version string (major level) is invalid')
