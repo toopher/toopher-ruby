@@ -31,13 +31,26 @@ require 'oauth'
 class ToopherApiError < StandardError
 end
 
+# Exceptions that can be used for control flow when using zero-storage
+class UserDisabledError < ToopherApiError
+end
+
+class UnknownUserError < ToopherApiError
+end
+
+class UnknownTerminalError < ToopherApiError
+end
+
+class PairingDeactivatedError< ToopherApiError
+end
+
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherAPI
   # Version of the library
-  VERSION = '1.0.6'
+  VERSION = '1.1.0'
 
   # Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
-  DEFAULT_BASE_URL = 'https://toopher-api.appspot.com/v1/'
+  DEFAULT_BASE_URL = 'https://api.toopher.com/v1/'
 
   # Creates a Toopher API consumer
   #
@@ -45,7 +58,7 @@ class ToopherAPI
   # @param [String] secret Your Toopher API Secret
   # @param [Hash] options OAuth Options hash.
   # @param [string] base_url The base URL to use for the Toopher API
-  def initialize(key,secret,options={}, base_url = DEFAULT_BASE_URL)
+  def initialize(key, secret, options = {}, base_url = DEFAULT_BASE_URL)
     consumer_key = key
     consumer_secret = secret
 
@@ -102,6 +115,33 @@ class ToopherAPI
     return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
   end
 
+  def authenticate_by_user_name(user_name, terminal_name_extra, action_name = '', options = {})
+    options[:user_name] = user_name
+    options[:terminal_name_extra] = terminal_name_extra
+    return authenticate('', '', action_name, options)
+  end
+
+  def create_user_terminal(user_name, terminal_name, requester_terminal_id)
+    uri = 'user_terminals/create'
+    params = {:user_name => user_name,
+              :name => terminal_name,
+              :name_extra => requester_terminal_id}
+    result = post(uri, params)
+  end
+
+  def set_toopher_enabled_for_user(user_name, enabled)
+    uri = 'users'
+    users = get(uri, {"name" => user_name})
+    if users.count > 1
+      raise ToopherApiError, "Multiple users with name = #{user_name}"
+    elsif users.count == 0
+      raise ToopherApiError, "No users with name = #{user_name}"
+    end
+    uri = 'users/' + users[0]['id']
+    params = {'disable_toopher_auth' => !enabled}
+    result = post(uri, params)
+  end
+
   private
   def post(endpoint, parameters)
     url = URI.parse(@base_url + endpoint)
@@ -110,9 +150,13 @@ class ToopherAPI
     return request(url, req)
   end
 
-  def get(endpoint)
+  def get(endpoint, parameters = {})
     url = URI.parse(@base_url + endpoint)
-    req = Net::HTTP::Get.new(url.path)
+    if parameters.empty?
+      req = Net::HTTP::Get.new(url.path)
+    else
+      req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(parameters))
+    end
     return request(url, req)
   end
 
@@ -123,10 +167,25 @@ class ToopherAPI
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
     res = http.request(req)
     decoded = JSON.parse(res.body)
-    if(decoded.has_key?("error_code"))
-      raise ToopherApiError, "Error code " + decoded['error_code'].to_s + ": " + decoded['error_message']
-    end
+    parse_request_error(decoded) if res.code.to_i >= 400
     return decoded
+  end
+
+  def parse_request_error(decoded)
+    if(decoded.has_key?("error_code"))
+      error_code, error_message = decoded['error_code'], decoded['error_message']
+      if error_code == 704
+        raise UserDisabledError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_code == 705
+        raise UnknownUserError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_code == 706
+        raise UnknownTerminalError, "Error code #{error_code.to_s} : #{error_message}"
+      elsif error_message =~ /pairing has not been authorized|pairing has been deactivated/i
+        raise PairingDeactivatedError, "Error code #{error_code.to_s} : #{error_message}"
+      else
+        raise ToopherApiError,"Error code #{error_code.to_s} : #{error_message}"
+      end
+    end
   end
 end
 

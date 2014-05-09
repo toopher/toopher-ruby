@@ -69,6 +69,38 @@ $ ruby demo/toopher_demo.ruby
 ```
 To avoid being prompted for your Toopher API key and secret, you can define them in the $TOOPHER_CONSUMER_KEY and $TOOPHER_CONSUMER_SECRET environment variables
 
+#### Zero-Storage usage option
+Requesters can choose to integrate the Toopher API in a way does not require storing any per-user data such as Pairing ID and Terminal ID - all of the storage
+is handled by the Toopher API Web Service, allowing your local database to remain unchanged.  If the Toopher API needs more data, it will raise an exception with a specific
+error string that allows your code to respond appropriately.
+
+```ruby
+begin
+    # optimistically try to authenticate against Toopher API with username and a Terminal Identifier
+    # Terminal Identifer is typically a randomly generated secure browser cookie.  It does not
+    # need to be human-readable
+    auth = api.authenticate_by_user_name(user_name, terminal_identifier)
+
+    # if you got here, everything is good!  poll the auth request status as described above
+    # there are four distinct errors ToopherAPI can return if it needs more data
+rescue UserDisabledError
+    # you have marked this user as disabled in the Toopher API.
+rescue UnknownUserError
+    # This user has not yet paired a mobile device with their account.  Pair them
+    # using api.pair() as described above, then re-try authentication
+rescue UnknownTerminalError
+    # This user has not assigned a "Friendly Name" to this terminal identifier.
+    # Prompt them to enter a terminal name, then submit that "friendly name" to
+    # the Toopher API:
+    #   api.create_user_terminal(user_name, terminal_friendly_name, terminal_identifier)
+    # Afterwards, re-try authentication
+rescue PairingDeactivatedError
+    # this user does not have an active pairing,
+    # typically because they deleted the pairing.  You can prompt
+    # the user to re-pair with a new mobile device.
+end
+```
+
 #### Known Issues / Workarouds
 When running the demo code with ruby 1.9.3, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to [this railsapps page](http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
 ```shell
