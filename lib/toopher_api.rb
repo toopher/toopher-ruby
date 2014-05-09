@@ -47,7 +47,7 @@ end
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherAPI
   # Version of the library
-  VERSION = '1.1.0'
+  VERSION = '1.2.0'
 
   # Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
   DEFAULT_BASE_URL = 'https://api.toopher.com/v1/'

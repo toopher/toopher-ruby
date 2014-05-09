@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name          = 'toopher_api'
-  s.version       = '1.1.0'
-  s.date          = '2013-11-26'
+  s.version       = '1.2.0'
+  s.date          = '2014-05-10'
   s.summary       = 'Interface to the toopher.com authentication api'
   s.description   = 'Synchronous interface to the toopher.com authentication api.'
   s.authors       = ['Toopher, Inc.']
