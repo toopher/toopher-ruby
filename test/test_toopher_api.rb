@@ -2,9 +2,6 @@ require 'rubygems'
 require 'test/unit'
 require 'webmock/test_unit'
 require 'toopher_api'
-require 'coveralls'
-
-Coveralls.wear!
 
 class TestToopher < Test::Unit::TestCase
   def test_constructor()
