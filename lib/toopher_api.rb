@@ -68,6 +68,21 @@ class ToopherAPI
     }.merge(options)))
   end
 
+  # Create the pairing between a particular user and their mobile device using SMS
+  #
+  # @param [String] phone_number The user's mobile phone number, including the area code, and country code for non-U.S. numbers.
+  # @param [String] user_name A human recognizable string which represents the user making the request (usually their username). This is displayed to the user on the mobile app when authenticating.
+  #
+  # @return [PairingStatus] Information about the pairing request
+  def pair_sms(phone_number, user_name, phone_country='')
+    parameters = {
+      'phone_number' => phone_number,
+      'user_name' => user_name
+    }
+    phone_country.empty? or (parameters['phone_country'] = phone_country)
+    return PairingStatus.new(post('pairings/create/sms', parameters))
+  end
+
   # Check on the status of a previous pairing request
   #
   # @param [String] pairing_request_id The unique string identifier id returned by a previous pairing request.
