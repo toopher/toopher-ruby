@@ -64,6 +64,24 @@ class TestToopher < Test::Unit::TestCase
       assert(pairing.user_name == 'user', 'bad user name')
   end
 
+  def test_create_sms_pairing()
+    stub_http_request(:post, "https://toopher.test/v1/pairings/create/sms").
+      with(
+        :body => { 'phone_number' => '123', 'user_name' => 'user' },
+      ).
+      to_return(
+        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
+        :status => 200
+      )
+
+      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+      pairing = toopher.pair_sms('123', 'user')
+      assert(pairing.id == '1', 'bad pairing id')
+      assert(pairing.enabled == true, 'pairing not enabled')
+      assert(pairing.user_id == '1', 'bad user id')
+      assert(pairing.user_name == 'user', 'bad user name')
+  end
+
   def test_get_pairing_status()
     stub_http_request(:get, "https://toopher.test/v1/pairings/1").
       to_return(
