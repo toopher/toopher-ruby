@@ -1,5 +1,8 @@
 # ToopherAPI Ruby Client
 
+#### Ruby Version
+>=1.9.3
+
 #### Installing Dependencies
 Toopher manages dependencies with [Bundler](http://bundler.io/).
 
