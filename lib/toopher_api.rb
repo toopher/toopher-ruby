@@ -160,17 +160,12 @@ class ToopherAPI
     return User.new(get('users/' + user_id))
   end
 
-  def set_toopher_enabled_for_user(user_name, enabled)
-    uri = 'users'
-    users = get(uri, {"name" => user_name})
-    if users.count > 1
-      raise ToopherApiError, "Multiple users with name = #{user_name}"
-    elsif users.count == 0
-      raise ToopherApiError, "No users with name = #{user_name}"
-    end
-    uri = 'users/' + users[0]['id']
-    params = {'disable_toopher_auth' => !enabled}
-    result = post(uri, params)
+  def enable_user(username)
+    set_toopher_disabled_for_user(username, false)
+  end
+
+  def disable_user(username)
+    set_toopher_disabled_for_user(username, true)
   end
 
   private
@@ -217,6 +212,19 @@ class ToopherAPI
         raise ToopherApiError,"Error code #{error_code.to_s} : #{error_message}"
       end
     end
+  end
+
+  def set_toopher_disabled_for_user(username, disable)
+    params = { :name => username }
+    users = get('users', params)
+    if users.count > 1
+      raise ToopherApiError, 'Multiple users with name = #{username}'
+    elsif users.count == 0
+      raise ToopherApiError, 'No users with name = #{username}'
+    end
+    url = 'users/' + users[0]['id']
+    params = { :disable_toopher_auth => disable }
+    result = post(url, params)
   end
 end
 

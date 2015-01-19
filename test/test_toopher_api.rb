@@ -312,6 +312,66 @@ class TestToopher < Test::Unit::TestCase
     assert(user.disable_toopher_auth == false, 'user should not be disabled')
   end
 
+  def disable_user(disable)
+    user = User.new(
+      'id' => '1',
+      'name' => 'user name',
+      'disable_toopher_auth' => !disable
+    )
+
+    stub_http_request(:get, 'https://toopher.test/v1/users?name=' + user.name).
+      to_return(
+        :body => [
+          {
+            "id" => "1",
+            "name" => "user name",
+            "disable_toopher_auth" => !disable
+          }
+        ].to_json,
+        :status => 200
+      )
+
+    stub_http_request(:post, 'https://toopher.test/v1/users/1').
+      with(
+        :body => { 'disable_toopher_auth' => "#{disable}" }
+      ).
+      to_return(
+        :body => '{}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_nothing_raised do
+      if disable
+        toopher.disable_user(user.name)
+      else
+        toopher.enable_user(user.name)
+      end
+    end
+
+    stub_http_request(:get, 'https://toopher.test/v1/users/1').
+      to_return(
+        :body => {
+            "id" => "1",
+            "name" => "user name",
+            "disable_toopher_auth" => disable
+          }.to_json,
+        :status => 200
+      )
+    user = toopher.get_user_by_id('1')
+    assert(user.id == '1', 'wrong user id')
+    assert(user.name == 'user name', 'wrong user name')
+    assert(user.disable_toopher_auth == disable, 'user should be enabled')
+  end
+
+  def test_enable_user()
+    disable_user(false)
+  end
+
+  def test_disable_user()
+    disable_user(true)
+  end
+
   def test_toopher_request_error()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(
@@ -411,7 +471,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
+    auth_request = toopher.enable_user('user')
   end
 
   def test_no_user_to_enable_raises_correct_error()
@@ -422,7 +482,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
+      auth_request = toopher.enable_user('user')
     end
   end
 
@@ -451,7 +511,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.set_toopher_enabled_for_user('user', 'true')
+      auth_request = toopher.enable_user('user')
     end
   end
 
