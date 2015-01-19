@@ -78,16 +78,16 @@ class ToopherAPI
   #
   # @return [Pairing] Information about the pairing request
   def pair(username, phrase_or_num = '', **kwargs)
-    params = kwargs.merge('user_name' => username)
+    params = kwargs.merge(:user_name => username)
 
     if phrase_or_num.empty?
       url = 'pairings/create/qr'
     elsif phrase_or_num =~ /\d/
       url = 'pairings/create/sms'
-      params['phone_number'] = phrase_or_num 
+      params[:phone_number] = phrase_or_num
     else
       url = 'pairings/create'
-      params['pairing_phrase'] = phrase_or_num
+      params[:pairing_phrase] = phrase_or_num
     end
 
     return Pairing.new(post(url, params))
@@ -113,13 +113,13 @@ class ToopherAPI
     begin
       UUIDTools::UUID.parse(id_or_username)
       params = {
-        'pairing_id' => id_or_username,
-        'terminal_name' => terminal
+        :pairing_id => id_or_username,
+        :terminal_name => terminal
       }
     rescue
       params = {
-        'user_name' => id_or_username,
-        'terminal_name_extra' => terminal
+        :user_name => id_or_username,
+        :terminal_name_extra => terminal
       }
     end
 
@@ -169,19 +169,19 @@ class ToopherAPI
   end
 
   private
-  def post(endpoint, parameters)
+  def post(endpoint, **kwargs)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
-    req.set_form_data(parameters)
+    req.set_form_data(kwargs)
     return request(url, req)
   end
 
-  def get(endpoint, parameters = {})
+  def get(endpoint, **kwargs)
     url = URI.parse(@base_url + endpoint)
-    if parameters.empty?
+    if kwargs.empty?
       req = Net::HTTP::Get.new(url.path)
     else
-      req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(parameters))
+      req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(kwargs))
     end
     return request(url, req)
   end
