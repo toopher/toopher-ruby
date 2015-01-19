@@ -152,6 +152,10 @@ class ToopherAPI
     return User.new(post('users/create', params))
   end
 
+  def get_user_by_id(user_id)
+    return User.new(get('users/' + user_id))
+  end
+
   def set_toopher_enabled_for_user(user_name, enabled)
     uri = 'users'
     users = get(uri, {"name" => user_name})
