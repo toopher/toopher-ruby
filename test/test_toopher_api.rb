@@ -906,4 +906,24 @@ class TestUser < Test::Unit::TestCase
   def test_disable()
     disable_user(true)
   end
+
+  def test_reset_user()
+    user = User.new(
+      'id' => '1',
+      'name' => 'user name',
+      'disable_toopher_auth' => false
+    )
+    stub_http_request(:post, 'https://toopher.test/v1/users/reset').
+      with(
+        :body => { 'name' => 'user name'}
+      ).
+      to_return(
+        :body => '[]',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    result = user.reset(toopher)
+    assert(result == true)
+  end
 end

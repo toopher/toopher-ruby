@@ -443,4 +443,8 @@ class User
     @disable_toopher_auth = true
     @raw['disable_toopher_auth'] = true
   end
+
+  def reset(api)
+    return api.reset_user(@name)
+  end
 end
