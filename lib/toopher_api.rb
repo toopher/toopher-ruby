@@ -108,7 +108,7 @@ class ToopherAPI
   # @param [String] terminal Either the terminal_name, a human recognizable string which represents the terminal from which the user is making the request, or terminal_name_extra, a string to help differentiate identically named terminals. The terminal_name would be displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
   # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
   #
-  # @return [AuthenticationStatus] Information about the authentication request
+  # @return [AuthenticationRequest] Information about the authentication request
   def authenticate(id_or_username, terminal = '', action_name = '', **kwargs)
     begin
       UUIDTools::UUID.parse(id_or_username)
@@ -126,14 +126,14 @@ class ToopherAPI
     params['action_name'] = action_name unless action_name.empty?
     params.merge!(kwargs)
 
-    return AuthenticationStatus.new(post('authentication_requests/initiate', params))
+    return AuthenticationRequest.new(post('authentication_requests/initiate', params))
   end
 
   # Check on the status of a previous authentication request
   #
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
   def get_authentication_status(authentication_request_id)
-    return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
+    return AuthenticationRequest.new(get('authentication_requests/' + authentication_request_id))
   end
 
   def create_user_terminal(user_name, terminal_name, requester_terminal_id)
@@ -237,7 +237,7 @@ class Pairing
 end
 
 # Contains information about a particular authentication request
-class AuthenticationStatus
+class AuthenticationRequest
 
   # @!attribute id
   #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this authentication request. It can be used to request status information for the authentication request.

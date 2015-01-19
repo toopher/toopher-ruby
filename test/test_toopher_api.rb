@@ -423,3 +423,31 @@ class TestPairing < Test::Unit::TestCase
     end
   end
 end
+
+class TestAuthenticationRequest < Test::Unit::TestCase
+  def test_constructor()
+    assert_nothing_raised do
+      auth_request = AuthenticationRequest.new(
+        'id' => '1',
+        'pending' => true,
+        'granted' => false,
+        'automated' => false,
+        'reason' => 'it is a test',
+        'terminal' => {
+          'id' => '1',
+          'name' => 'term name',
+          'name_extra' => 'requester terminal id'
+        }
+      )
+
+       assert(auth_request.id == '1', 'bad auth request id')
+       assert(auth_request.pending == true, 'auth_request should be pending')
+       assert(auth_request.granted == false, 'auth_request should not be granted')
+       assert(auth_request.automated == false, 'auth_request should not be automated')
+       assert(auth_request.reason == 'it is a test', 'bad auth_request reason')
+       assert(auth_request.terminal_id == '1', 'bad terminal id')
+       assert(auth_request.terminal_name == 'term name', 'bad terminal name')
+       assert(auth_request.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
+    end
+  end
+end
