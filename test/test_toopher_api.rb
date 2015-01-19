@@ -492,3 +492,19 @@ class TestUserTerminal < Test::Unit::TestCase
     end
   end
 end
+
+class TestUser < Test::Unit::TestCase
+  def test_constructor()
+    assert_nothing_raised do
+      user = User.new(
+        'id' => '1',
+        'name' => 'user name',
+        'disable_toopher_auth' => false
+      )
+
+      assert(user.id == '1', 'bad user id')
+      assert(user.name == 'user name', 'bad user name')
+      assert(user.disable_toopher_auth == false, 'user should be enabled')
+    end
+  end
+end
