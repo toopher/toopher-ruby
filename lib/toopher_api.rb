@@ -168,6 +168,12 @@ class ToopherAPI
     set_toopher_disabled_for_user(username, true)
   end
 
+  def get_pairing_reset_link(pairing_id, **kwargs)
+    url = 'pairings/' + pairing_id + '/generate_reset_link'
+    result = post(url, kwargs)
+    return result['url']
+  end
+
   private
   def post(endpoint, **kwargs)
     url = URI.parse(@base_url + endpoint)
