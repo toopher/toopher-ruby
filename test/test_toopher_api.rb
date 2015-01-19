@@ -404,3 +404,22 @@ class TestToopher < Test::Unit::TestCase
   end
 end
 
+class TestPairing < Test::Unit::TestCase
+  def test_constructor()
+    assert_nothing_raised do
+      pairing = Pairing.new(
+        'id' => '1',
+        'enabled' => false,
+        'user' => {
+          'id' => '1',
+          'name' => 'user name'
+        }
+      )
+
+      assert(pairing.id == '1', 'bad pairing id')
+      assert(pairing.enabled == false, 'pairing should not be enabled')
+      assert(pairing.user_id == '1', 'bad user id')
+      assert(pairing.user_name == 'user name', 'bad user name')
+    end
+  end
+end
