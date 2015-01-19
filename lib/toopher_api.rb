@@ -136,12 +136,14 @@ class ToopherAPI
     return AuthenticationRequest.new(get('authentication_requests/' + authentication_request_id))
   end
 
-  def create_user_terminal(user_name, terminal_name, requester_terminal_id)
-    uri = 'user_terminals/create'
-    params = {:user_name => user_name,
-              :name => terminal_name,
-              :name_extra => requester_terminal_id}
-    result = post(uri, params)
+  def create_user_terminal(username, terminal_name, requester_terminal_id, **kwargs)
+    params = {
+      :user_name => username,
+      :name => terminal_name,
+      :name_extra => requester_terminal_id
+    }
+    params.merge!(kwargs)
+    return UserTerminal.new(post('user_terminals/create', params))
   end
 
   def set_toopher_enabled_for_user(user_name, enabled)

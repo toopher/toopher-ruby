@@ -246,6 +246,25 @@ class TestToopher < Test::Unit::TestCase
     assert(auth.raw['terminal']['name'] == 'another term name', 'could not access raw data')
   end
 
+  def test_create_user_terminal()
+    stub_http_request(:post, 'https://toopher.test/v1/user_terminals/create').
+      with(
+        :body => { 'user_name' => 'user name', 'name' => 'term name', 'name_extra' => 'requester terminal id'}
+      ).
+      to_return(
+        :body => '{"id":"1", "name":"term name", "name_extra":"term name extra", "user":{"name":"user name", "id":"1"}}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    terminal = toopher.create_user_terminal('user name', 'term name', 'requester terminal id')
+    assert(terminal.id == '1', 'wrong terminal id')
+    assert(terminal.name == 'term name', 'wrong terminal name')
+    assert(terminal.name_extra == 'term name extra')
+    assert(terminal.user_name == 'user name', 'wrong user name')
+    assert(terminal.user_id == '1', 'wrong user id')
+  end
+
   def test_toopher_request_error()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(
