@@ -386,6 +386,21 @@ class TestToopher < Test::Unit::TestCase
     assert(reset_link == 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde')
   end
 
+  def test_email_pairing_reset_link_to_user()
+    stub_http_request(:post, 'https://toopher.test/v1/pairings/1/send_reset_link').
+      with(
+        :body => { 'reset_email' => 'email' }
+      ).
+      to_return(
+        :body => '[]',
+        :status => 201
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    result = toopher.email_pairing_reset_link_to_user('1', 'email')
+    assert(result == true, 'http request returns error status')
+  end
+
   def test_toopher_request_error()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(

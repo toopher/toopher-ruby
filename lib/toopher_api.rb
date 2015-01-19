@@ -174,6 +174,14 @@ class ToopherAPI
     return result['url']
   end
 
+  def email_pairing_reset_link_to_user(pairing_id, email, **kwargs)
+    url = 'pairings/' + pairing_id + '/send_reset_link'
+    params = { :reset_email => email }
+    params.merge!(kwargs)
+    post(url, params)
+    return true # would raise error in parse_request_error() if failed
+  end
+
   private
   def post(endpoint, **kwargs)
     url = URI.parse(@base_url + endpoint)
