@@ -26,6 +26,7 @@ require 'net/https'
 require 'uri'
 require 'json'
 require 'oauth'
+require 'uuidtools'
 
 # An exception class used to indicate an error returned by a Toopher API request
 class ToopherApiError < StandardError
@@ -81,14 +82,12 @@ class ToopherAPI
 
     if phrase_or_num.empty?
       url = 'pairings/create/qr'
+    elsif phrase_or_num =~ /\d/
+      url = 'pairings/create/sms'
+      params['phone_number'] = phrase_or_num 
     else
-      if phrase_or_num =~ /\d/
-        url = 'pairings/create/sms'
-        params['phone_number'] = phrase_or_num 
-      else
-        url = 'pairings/create'
-        params['pairing_phrase'] = phrase_or_num
-      end
+      url = 'pairings/create'
+      params['pairing_phrase'] = phrase_or_num
     end
 
     return PairingStatus.new(post(url, params))
@@ -105,18 +104,29 @@ class ToopherAPI
 
   # Authenticate an action with Toopher
   #
-  # @param [String] pairing_id The unique string identifier id returned by a previous pairing request.
-  # @param [String] terminal_name A human recognizable string which represents the terminal from which the user is making the request. This is displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
+  # @param [String] id_or_username The unique string identifier id returned by a previous pairing request or the username of the pairing's user.
+  # @param [String] terminal Either the terminal_name, a human recognizable string which represents the terminal from which the user is making the request, or terminal_name_extra, a string to help differentiate identically named terminals. The terminal_name would be displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
   # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
   #
   # @return [AuthenticationStatus] Information about the authentication request
-  def authenticate(pairing_id, terminal_name = '', action_name = '', options = {})
-    parameters = {
-      'pairing_id' => pairing_id,
-      'terminal_name' => terminal_name
-    }
-    action_name.empty? or (parameters['action_name'] = action_name)
-    return AuthenticationStatus.new(post('authentication_requests/initiate', parameters.merge(options)))
+  def authenticate(id_or_username, terminal = '', action_name = '', **kwargs)
+    begin
+      UUIDTools::UUID.parse(id_or_username)
+      params = {
+        'pairing_id' => id_or_username,
+        'terminal_name' => terminal
+      }
+    rescue
+      params = {
+        'user_name' => id_or_username,
+        'terminal_name_extra' => terminal
+      }
+    end
+
+    params['action_name'] = action_name unless action_name.empty?
+    params.merge!(kwargs)
+
+    return AuthenticationStatus.new(post('authentication_requests/initiate', params))
   end
 
   # Check on the status of a previous authentication request
@@ -124,12 +134,6 @@ class ToopherAPI
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
   def get_authentication_status(authentication_request_id)
     return AuthenticationStatus.new(get('authentication_requests/' + authentication_request_id))
-  end
-
-  def authenticate_by_user_name(user_name, terminal_name_extra, action_name = '', options = {})
-    options[:user_name] = user_name
-    options[:terminal_name_extra] = terminal_name_extra
-    return authenticate('', '', action_name, options)
   end
 
   def create_user_terminal(user_name, terminal_name, requester_terminal_id)
@@ -263,6 +267,10 @@ class AuthenticationStatus
   #   @return [String] The human recognizable terminal name associated with the given id.
   attr_accessor :terminal_name
 
+  # @!attribute terminal_name_extra
+  #   @return [String] A string to help differentiate identically named terminals.
+  attr_accessor :terminal_name_extra
+
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
@@ -275,6 +283,7 @@ class AuthenticationStatus
     @reason = json_obj['reason']
     @terminal_id = json_obj['terminal']['id']
     @terminal_name = json_obj['terminal']['name']
+    @terminal_name_extra = json_obj['terminal']['name_extra']
     @raw = json_obj
   end
 end

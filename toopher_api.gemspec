@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('oauth', '>= 0.4.7')
   s.add_dependency('json', '>= 1.7.5')
+  s.add_dependency('uuidtools', '>= 2.1.5')
 
   s.add_development_dependency('webmock', '>= 1.9.0')
   s.add_development_dependency('yard', '>= 0.8.3')

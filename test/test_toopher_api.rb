@@ -2,6 +2,7 @@ require 'rubygems'
 require 'test/unit'
 require 'webmock/test_unit'
 require 'toopher_api'
+require 'uuidtools'
 
 class TestToopher < Test::Unit::TestCase
   def test_constructor()
@@ -142,45 +143,73 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_create_authentication_with_no_action()
+    uuid = UUIDTools::UUID.random_create().to_str()
+
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       with(
-        :body => { 'pairing_id' => '1', 'terminal_name' => 'term name' }
+        :body => { 'pairing_id' => uuid, 'terminal_name' => 'term name' }
       ).
       to_return(
-        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :body => '{"id":"' + uuid + '","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
         :status => 200
       )
 
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth = toopher.authenticate('1', 'term name')
-    assert(auth.id == '1', 'wrong auth id')
-    assert(auth.pending == false, 'wrong auth pending')
-    assert(auth.granted == true, 'wrong auth granted')
-    assert(auth.automated == true, 'wrong auth automated')
-    assert(auth.reason == 'some reason', 'wrong auth reason')
-    assert(auth.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
+    auth_request = toopher.authenticate(uuid, 'term name')
+    assert(auth_request.id == uuid, 'wrong auth id')
+    assert(auth_request.pending == false, 'wrong auth pending')
+    assert(auth_request.granted == true, 'wrong auth granted')
+    assert(auth_request.automated == true, 'wrong auth automated')
+    assert(auth_request.reason == 'some reason', 'wrong auth reason')
+    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
+    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
+    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
   end
 
   def test_create_authentication_with_optional_arg()
+    uuid = UUIDTools::UUID.random_create().to_str()
+
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       with(
-        :body => { 'pairing_id' => '1', 'terminal_name' => 'term name', 'test_param' => 'foo' }
+        :body => { 'pairing_id' => uuid, 'terminal_name' => 'term name', 'test_param' => 'foo' }
       ).
       to_return(
-        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
+        :body => '{"id":"' + uuid + '","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
         :status => 200
       )
 
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth = toopher.authenticate('1', 'term name', '', {'test_param' => 'foo'})
-    assert(auth.id == '1', 'wrong auth id')
-    assert(auth.pending == false, 'wrong auth pending')
-    assert(auth.granted == true, 'wrong auth granted')
-    assert(auth.automated == true, 'wrong auth automated')
-    assert(auth.reason == 'some reason', 'wrong auth reason')
-    assert(auth.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
+    auth_request = toopher.authenticate(uuid, 'term name', :test_param => 'foo')
+    assert(auth_request.id == uuid, 'wrong auth id')
+    assert(auth_request.pending == false, 'wrong auth pending')
+    assert(auth_request.granted == true, 'wrong auth granted')
+    assert(auth_request.automated == true, 'wrong auth automated')
+    assert(auth_request.reason == 'some reason', 'wrong auth reason')
+    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
+    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
+    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
+  end
+
+  def test_create_authentication_with_username()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      with(
+        :body => { 'user_name' => 'user', 'terminal_name_extra' => 'term name extra' }
+      ).
+      to_return(
+        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    auth_request = toopher.authenticate('user', 'term name extra')
+    assert(auth_request.id == '1', 'wrong auth id')
+    assert(auth_request.pending == false, 'wrong auth pending')
+    assert(auth_request.granted == true, 'wrong auth granted')
+    assert(auth_request.automated == true, 'wrong auth automated')
+    assert(auth_request.reason == 'some reason', 'wrong auth reason')
+    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
+    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
+    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
   end
 
   def test_get_authentication_status()
@@ -237,7 +266,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise UserDisabledError do
-      auth_request = toopher.authenticate_by_user_name('disabled user', 'terminal name')
+      auth_request = toopher.authenticate('disabled user', 'terminal name')
     end
   end
 
@@ -249,7 +278,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise UnknownUserError do
-      auth_request = toopher.authenticate_by_user_name('unknown user', 'terminal name')
+      auth_request = toopher.authenticate('unknown user', 'terminal name')
     end
   end
 
@@ -261,7 +290,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise UnknownTerminalError do
-      auth_request = toopher.authenticate_by_user_name('user', 'unknown terminal name')
+      auth_request = toopher.authenticate('user', 'unknown terminal name')
     end
   end
 
@@ -273,7 +302,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise PairingDeactivatedError do
-      auth_request = toopher.authenticate_by_user_name('user', 'terminal name')
+      auth_request = toopher.authenticate('user', 'terminal name')
     end
   end
 
@@ -285,7 +314,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise PairingDeactivatedError do
-      auth_request = toopher.authenticate_by_user_name('user', 'terminal name')
+      auth_request = toopher.authenticate('user', 'terminal name')
     end
   end
 

@@ -79,7 +79,7 @@ begin
     # optimistically try to authenticate against Toopher API with username and a Terminal Identifier
     # Terminal Identifer is typically a randomly generated secure browser cookie.  It does not
     # need to be human-readable
-    auth = api.authenticate_by_user_name(user_name, terminal_identifier)
+    auth = api.authenticate(user_name, terminal_identifier)
 
     # if you got here, everything is good!  poll the auth request status as described above
     # there are four distinct errors ToopherAPI can return if it needs more data
