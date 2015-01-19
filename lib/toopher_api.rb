@@ -168,6 +168,12 @@ class ToopherAPI
     set_toopher_disabled_for_user(username, true)
   end
 
+  def reset_user(username)
+    params = { :name => username }
+    post('users/reset', params)
+    return true # would raise error in parse_request_error() if failed
+  end
+
   def get_pairing_reset_link(pairing_id, **kwargs)
     url = 'pairings/' + pairing_id + '/generate_reset_link'
     result = post(url, kwargs)

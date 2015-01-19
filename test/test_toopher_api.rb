@@ -372,6 +372,21 @@ class TestToopher < Test::Unit::TestCase
     disable_user(true)
   end
 
+  def test_reset_user()
+    stub_http_request(:post, 'https://toopher.test/v1/users/reset').
+      with(
+        :body => { 'name' => 'user name'}
+      ).
+      to_return(
+        :body => '[]',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    result = toopher.reset_user('user name')
+    assert(result == true)
+  end
+
   def test_get_pairing_reset_link()
     stub_http_request(:post, "https://toopher.test/v1/pairings/1/generate_reset_link").
       to_return(
