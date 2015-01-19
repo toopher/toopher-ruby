@@ -414,4 +414,11 @@ class User
     @disable_toopher_auth = json_obj['disable_toopher_auth']
     @raw = json_obj
   end
+
+  def refresh_from_server(api)
+    result = api.get('users/' + @id)
+    @name = result['name']
+    @disable_toopher_auth = result['disable_toopher_auth']
+    @raw = result
+  end
 end
