@@ -796,6 +796,40 @@ class TestUserTerminal < Test::Unit::TestCase
       assert(terminal.user_name == 'user name', 'bad user name')
     end
   end
+
+  def test_refresh_from_server()
+    terminal = UserTerminal.new(
+      'id' => '1',
+      'name' => 'term name',
+      'name_extra' => 'requester terminal id',
+      'user' => {
+        'id' => '1',
+        'name' => 'user name'
+      }
+    )
+
+    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/1').
+      to_return(
+        :body => {
+          :id => '1',
+          :name => 'term name changed',
+          :name_extra => 'requester terminal id',
+          :user => {
+            :id => '1',
+            :name => 'user name changed'
+          }
+        }.to_json,
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    terminal.refresh_from_server(toopher)
+    assert(terminal.id == '1', 'bad terminal id')
+    assert(terminal.name == 'term name changed', 'bad terminal name')
+    assert(terminal.name_extra == 'requester terminal id', 'bad terminal name extra')
+    assert(terminal.user_id == '1', 'bad user id')
+    assert(terminal.user_name == 'user name changed', 'bad user name')
+  end
 end
 
 class TestUser < Test::Unit::TestCase

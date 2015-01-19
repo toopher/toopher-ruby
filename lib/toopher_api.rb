@@ -389,6 +389,14 @@ class UserTerminal
     @user_name = json_obj['user']['name']
     @raw = json_obj
   end
+
+  def refresh_from_server(api)
+    result = api.get('user_terminals/' + @id)
+    @name = result['name']
+    @name_extra = result['name_extra']
+    @user_name = result['user']['name']
+    @raw = result
+  end
 end
 
 class User
