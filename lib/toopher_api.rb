@@ -283,6 +283,14 @@ class Pairing
     @user_name = json_obj['user']['name']
     @raw = json_obj
   end
+
+  def refresh_from_server(api)
+    result = api.get('pairings/' + @id)
+    @enabled = result['enabled']
+    @pending = result['pending']
+    @user_name = result['user']['name']
+    @raw = result
+  end
 end
 
 # Contains information about a particular authentication request

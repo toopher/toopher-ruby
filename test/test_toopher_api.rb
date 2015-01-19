@@ -137,12 +137,14 @@ class TestToopher < Test::Unit::TestCase
       pairing = toopher.get_pairing_by_id('1')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
+      assert(pairing.pending == false, 'pairing is pending')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'paired user', 'bad user name')
 
       pairing = toopher.get_pairing_by_id('2')
       assert(pairing.id == '2', 'bad pairing id')
       assert(pairing.enabled == false, 'pairing should not be enabled')
+      assert(pairing.pending == true, 'pairing is not pending')
       assert(pairing.user_id == '2', 'bad user id')
       assert(pairing.user_name == 'unpaired user', 'bad user name')
   end
@@ -653,6 +655,53 @@ class TestPairing < Test::Unit::TestCase
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user name', 'bad user name')
     end
+  end
+
+  def test_refresh_from_server()
+    pairing1 = Pairing.new(
+      'id' => '1',
+      'enabled' => false,
+      'pending' => true,
+      'user' => {
+        'id' => '1',
+        'name' => 'user 1'
+      }
+    )
+    pairing2 = Pairing.new(
+      'id' => '2',
+      'enabled' => false,
+      'pending' => true,
+      'user' => {
+        'id' => '2',
+        'name' => 'user 2'
+      }
+    )
+
+    stub_http_request(:get, "https://toopher.test/v1/pairings/1").
+      to_return(
+        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"paired user changed name"}}',
+        :status => 200
+      )
+    stub_http_request(:get, "https://toopher.test/v1/pairings/2").
+      to_return(
+        :body => '{"id":"2","enabled":false,"pending":false,"user":{"id":"2","name":"unpaired user changed name"}}',
+        :status => 200
+      )
+
+      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+      pairing1.refresh_from_server(toopher)
+      assert(pairing1.id == '1', 'bad pairing id')
+      assert(pairing1.enabled == true, 'pairing not enabled')
+      assert(pairing1.pending == false, 'pairing is pending')
+      assert(pairing1.user_id == '1', 'bad user id')
+      assert(pairing1.user_name == 'paired user changed name', 'bad user name')
+
+      pairing2.refresh_from_server(toopher)
+      assert(pairing2.id == '2', 'bad pairing id')
+      assert(pairing2.enabled == false, 'pairing should not be enabled')
+      assert(pairing2.pending == false, 'pairing is pending')
+      assert(pairing2.user_id == '2', 'bad user id')
+      assert(pairing2.user_name == 'unpaired user changed name', 'bad user name')
   end
 end
 
