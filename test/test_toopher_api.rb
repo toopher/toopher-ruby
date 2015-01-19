@@ -34,7 +34,7 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' }
       ).
       to_return(
-        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
+        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"user"}}',
         :status => 200
       )
 
@@ -42,6 +42,7 @@ class TestToopher < Test::Unit::TestCase
       pairing = toopher.pair('user', 'immediate_pair')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
+      assert(pairing.pending == false, 'pairing is pending')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user', 'bad user name')
       assert(pairing.raw['user']['name'] == 'user', 'could not access raw data')
@@ -53,7 +54,7 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' , 'test_param' => 'foo'}
       ).
       to_return(
-        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"user"}}',
+        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"user"}}',
         :status => 200
       )
 
@@ -61,6 +62,7 @@ class TestToopher < Test::Unit::TestCase
       pairing = toopher.pair('user', 'immediate_pair', :test_param => 'foo')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
+      assert(pairing.pending == false, 'pairing is pending')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user', 'bad user name')
   end
@@ -71,7 +73,7 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555'}
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
         :status => 200
       )
 
@@ -79,6 +81,7 @@ class TestToopher < Test::Unit::TestCase
     pairing = toopher.pair('user', '555-555-5555')
     assert(pairing.id == '1', 'bad pairing id')
     assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.pending == false, 'pairing is pending')
     assert(pairing.user_id == '1', 'bad user id')
     assert(pairing.user_name == 'user', 'bad user name')
 
@@ -87,13 +90,14 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555', 'country_code' => '1'}
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
         :status => 200
       )
 
     pairing = toopher.pair('user', '555-555-5555', :country_code => '1')
     assert(pairing.id == '1', 'bad pairing id')
     assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.pending == false, 'pairing is pending')
     assert(pairing.user_id == '1', 'bad user id')
     assert(pairing.user_name == 'user', 'bad user name')
   end
@@ -104,7 +108,7 @@ class TestToopher < Test::Unit::TestCase
         :body => { 'user_name' => 'user' }
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
         :status => 200
       )
 
@@ -112,6 +116,7 @@ class TestToopher < Test::Unit::TestCase
     pairing = toopher.pair('user')
     assert(pairing.id == '1', 'bad pairing id')
     assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.pending == false, 'pairing is pending')
     assert(pairing.user_id == '1', 'bad user id')
     assert(pairing.user_name == 'user', 'bad user name')
   end
@@ -119,12 +124,12 @@ class TestToopher < Test::Unit::TestCase
   def test_get_pairing_by_id()
     stub_http_request(:get, "https://toopher.test/v1/pairings/1").
       to_return(
-        :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"paired user"}}',
+        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"paired user"}}',
         :status => 200
       )
     stub_http_request(:get, "https://toopher.test/v1/pairings/2").
       to_return(
-        :body => '{"id":"2","enabled":false,"user":{"id":"2","name":"unpaired user"}}',
+        :body => '{"id":"2","enabled":false,"pending":true, "user":{"id":"2","name":"unpaired user"}}',
         :status => 200
       )
 
@@ -422,6 +427,7 @@ class TestToopher < Test::Unit::TestCase
         :body => {
             :id => '1',
             :enabled => true,
+            :pending => false,
             :user => {
               :id => '1',
               :name => 'user name'
@@ -434,6 +440,7 @@ class TestToopher < Test::Unit::TestCase
     result = toopher.get('pairings/1')
     assert(result['id'] == '1', 'wrong pairing id')
     assert(result['enabled'] == true, 'pairing should be enabled')
+    assert(result['pending'] == false, 'pairing should not be pending')
     assert(result['user']['id'] == '1', 'wrong user id')
     assert(result['user']['name'] == 'user name', 'wrong user name')
   end
@@ -633,6 +640,7 @@ class TestPairing < Test::Unit::TestCase
       pairing = Pairing.new(
         'id' => '1',
         'enabled' => false,
+        'pending' => true,
         'user' => {
           'id' => '1',
           'name' => 'user name'
@@ -641,6 +649,7 @@ class TestPairing < Test::Unit::TestCase
 
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == false, 'pairing should not be enabled')
+      assert(pairing.pending == true, 'pairing should be pending')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user name', 'bad user name')
     end

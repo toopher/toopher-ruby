@@ -259,6 +259,10 @@ class Pairing
   #   @return [Boolean] Indicates whether or not the pairing has been acknowledged and enabled by the user.
   attr_accessor :enabled
 
+  # @!attribute pending
+  #   @return [Boolean] Indicates whether or not the pairing is waiting to be acknowledged and enabled or denied by the user.
+  attr_accessor :pending
+
   # @!attribute user_id
   #   @return [String] A unique identifier generated and returned by the Toopher web service for a given user.
   attr_accessor :user_id
@@ -274,6 +278,7 @@ class Pairing
   def initialize(json_obj)
     @id = json_obj['id']
     @enabled = json_obj['enabled']
+    @pending = json_obj['pending']
     @user_id = json_obj['user']['id']
     @user_name = json_obj['user']['name']
     @raw = json_obj
