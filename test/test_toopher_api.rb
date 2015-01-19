@@ -731,6 +731,49 @@ class TestAuthenticationRequest < Test::Unit::TestCase
        assert(auth_request.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
     end
   end
+
+  def test_refresh_from_server()
+    auth_request = AuthenticationRequest.new(
+      'id' => '1',
+      'pending' => true,
+      'granted' => false,
+      'automated' => false,
+      'reason' => 'it is a test',
+      'terminal' => {
+        'id' => '1',
+        'name' => 'term name',
+        'name_extra' => 'requester terminal id'
+      }
+    )
+
+    stub_http_request(:get, 'https://toopher.test/v1/authentication_requests/1').
+      to_return(
+        :body => {
+          :id => '1',
+          :pending => false,
+          :granted => true,
+          :automated => true,
+          :reason => 'it is a test',
+          :terminal => {
+            :id => '1',
+            :name => 'term name changed',
+            :name_extra => 'requester terminal id'
+          }
+        }.to_json,
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    auth_request.refresh_from_server(toopher)
+    assert(auth_request.id == '1', 'bad auth request id')
+    assert(auth_request.pending == false, 'auth request should not be pending')
+    assert(auth_request.granted == true, 'auth request should be granted')
+    assert(auth_request.automated == true, 'auth request should be automated')
+    assert(auth_request.reason == 'it is a test', 'bad auth request reason')
+    assert(auth_request.terminal_id == '1', 'bad terminal id')
+    assert(auth_request.terminal_name == 'term name changed', 'bad terminal name')
+    assert(auth_request.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
+  end
 end
 
 class TestUserTerminal < Test::Unit::TestCase

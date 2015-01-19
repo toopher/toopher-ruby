@@ -343,6 +343,17 @@ class AuthenticationRequest
     @terminal_name_extra = json_obj['terminal']['name_extra']
     @raw = json_obj
   end
+
+  def refresh_from_server(api)
+    result = api.get('authentication_requests/' + @id)
+    @pending = result['pending']
+    @granted = result['granted']
+    @automated = result['automated']
+    @reason = result['reason']
+    @terminal_name = result['terminal']['name']
+    @terminal_name_extra = result['terminal']['name_extra']
+    @raw = result
+  end
 end
 
 class UserTerminal
