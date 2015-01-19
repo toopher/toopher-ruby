@@ -451,3 +451,25 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     end
   end
 end
+
+class TestUserTerminal < Test::Unit::TestCase
+  def test_constructor()
+    assert_nothing_raised do
+      terminal = UserTerminal.new(
+        'id' => '1',
+        'name' => 'term name',
+        'name_extra' => 'requester terminal id',
+        'user' => {
+          'id' => '1',
+          'name' => 'user name'
+        }
+      )
+
+      assert(terminal.id == '1', 'bad terminal id')
+      assert(terminal.name == 'term name', 'bad terminal name')
+      assert(terminal.name_extra == 'requester terminal id', 'bad terminal name extra')
+      assert(terminal.user_id == '1', 'bad user id')
+      assert(terminal.user_name == 'user name', 'bad user name')
+    end
+  end
+end

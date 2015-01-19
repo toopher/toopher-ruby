@@ -287,3 +287,38 @@ class AuthenticationRequest
     @raw = json_obj
   end
 end
+
+class UserTerminal
+  # @!attribute id
+  #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal. It can be used to request status information for the user terminal.
+  attr_accessor :id
+
+  # @!attribute name
+  #   @return [String] The human recognizable terminal name associated with the given id.
+  attr_accessor :name
+
+  # @!attribute name_extra
+  #   @return [String] A string to help differentiate identically named terminals.
+  attr_accessor :name_extra
+
+  # @!attribute user_id
+  #   @return [String] A unique identifier generated and returned by the Toopher web service for a given user.
+  attr_accessor :user_id
+
+  # @!attribute user_name
+  #   @return [String] The human recognizable user name associated with the given id.
+  attr_accessor :user_name
+
+  # @!attribute raw
+  #   @return [hash] The raw data returned from the Toopher API
+  attr_accessor :raw
+
+  def initialize(json_obj)
+    @id = json_obj['id']
+    @name = json_obj['name']
+    @name_extra = json_obj['name_extra']
+    @user_id = json_obj['user']['id']
+    @user_name = json_obj['user']['name']
+    @raw = json_obj
+  end
+end
