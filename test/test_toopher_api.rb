@@ -265,6 +265,22 @@ class TestToopher < Test::Unit::TestCase
     assert(terminal.user_id == '1', 'wrong user id')
   end
 
+  def test_get_user_terminal_by_id()
+    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/1').
+      to_return(
+        :body => '{"id":"1", "name":"term name", "name_extra":"term name extra", "user":{"name":"user name", "id":"1"}}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    terminal = toopher.get_user_terminal_by_id('1')
+    assert(terminal.id == '1', 'wrong terminal id')
+    assert(terminal.name == 'term name', 'wrong terminal name')
+    assert(terminal.name_extra == 'term name extra')
+    assert(terminal.user_name == 'user name', 'wrong user name')
+    assert(terminal.user_id == '1', 'wrong user id')
+  end
+
   def test_create_user()
     stub_http_request(:post, 'https://toopher.test/v1/users/create').
       with(

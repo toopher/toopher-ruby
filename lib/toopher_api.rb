@@ -146,6 +146,10 @@ class ToopherAPI
     return UserTerminal.new(post('user_terminals/create', params))
   end
 
+  def get_user_terminal_by_id(terminal_id)
+    return UserTerminal.new(get('user_terminals/' + terminal_id))
+  end
+
   def create_user(username, **kwargs)
     params = { :name => username }
     params.merge!(kwargs)
