@@ -56,7 +56,7 @@ while (true)
   while(auth.pending)
     puts 'waiting for authentication...'
     sleep(1)
-    auth = toopher.get_authentication_status(auth.id)
+    auth = toopher.get_authentication_request_by_id(auth.id)
   end
 
   automation = auth.automated ? 'automatically ' : ''

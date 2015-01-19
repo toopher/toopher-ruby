@@ -38,7 +38,7 @@ auth_status = toopher.authenticate(pairing.id, 'my computer')
 
 # Once they've responded you can then check the status
 while auth_status.pending
-    auth_status = toopher.get_authentication_status(auth_status.id)
+    auth_status = toopher.get_authentication_request_by_id(auth_status.id)
     sleep(1)
 end
 

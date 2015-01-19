@@ -132,7 +132,7 @@ class ToopherAPI
   # Check on the status of a previous authentication request
   #
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
-  def get_authentication_status(authentication_request_id)
+  def get_authentication_request_by_id(authentication_request_id)
     return AuthenticationRequest.new(get('authentication_requests/' + authentication_request_id))
   end
 

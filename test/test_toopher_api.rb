@@ -212,7 +212,7 @@ class TestToopher < Test::Unit::TestCase
     assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
   end
 
-  def test_get_authentication_status()
+  def test_get_authentication_request_by_id()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(
         :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
@@ -225,7 +225,7 @@ class TestToopher < Test::Unit::TestCase
       )
 
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth = toopher.get_authentication_status('1')
+    auth = toopher.get_authentication_request_by_id('1')
     assert(auth.id == '1', 'wrong auth id')
     assert(auth.pending == false, 'wrong auth pending')
     assert(auth.granted == true, 'wrong auth granted')
@@ -235,7 +235,7 @@ class TestToopher < Test::Unit::TestCase
     assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
     assert(auth.raw['terminal']['name'] == 'term name', 'could not access raw data')
 
-    auth = toopher.get_authentication_status('2')
+    auth = toopher.get_authentication_request_by_id('2')
     assert(auth.id == '2', 'wrong auth id')
     assert(auth.pending == true, 'wrong auth pending')
     assert(auth.granted == false, 'wrong auth granted')
@@ -254,7 +254,7 @@ class TestToopher < Test::Unit::TestCase
       )
     toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth = toopher.get_authentication_status('1')
+      auth = toopher.get_authentication_request_by_id('1')
     end
   end
 
