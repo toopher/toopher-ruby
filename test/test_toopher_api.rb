@@ -116,7 +116,7 @@ class TestToopher < Test::Unit::TestCase
     assert(pairing.user_name == 'user', 'bad user name')
   end
 
-  def test_get_pairing_status()
+  def test_get_pairing_by_id()
     stub_http_request(:get, "https://toopher.test/v1/pairings/1").
       to_return(
         :body => '{"id":"1","enabled":true,"user":{"id":"1","name":"paired user"}}',
@@ -129,13 +129,13 @@ class TestToopher < Test::Unit::TestCase
       )
 
       toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.get_pairing_status('1')
+      pairing = toopher.get_pairing_by_id('1')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'paired user', 'bad user name')
 
-      pairing = toopher.get_pairing_status('2')
+      pairing = toopher.get_pairing_by_id('2')
       assert(pairing.id == '2', 'bad pairing id')
       assert(pairing.enabled == false, 'pairing should not be enabled')
       assert(pairing.user_id == '2', 'bad user id')

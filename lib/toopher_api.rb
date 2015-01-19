@@ -95,11 +95,11 @@ class ToopherAPI
 
   # Check on the status of a previous pairing request
   #
-  # @param [String] pairing_request_id The unique string identifier id returned by a previous pairing request.
+  # @param [String] pairing_id The unique string identifier id returned by a previous pairing request.
   #
   # @return [PairingStatus] Information about the pairing request
-  def get_pairing_status(pairing_request_id)
-    return PairingStatus.new(get('pairings/' + pairing_request_id))
+  def get_pairing_by_id(pairing_id)
+    return PairingStatus.new(get('pairings/' + pairing_id))
   end
 
   # Authenticate an action with Toopher
