@@ -265,6 +265,23 @@ class TestToopher < Test::Unit::TestCase
     assert(terminal.user_id == '1', 'wrong user id')
   end
 
+  def test_create_user()
+    stub_http_request(:post, 'https://toopher.test/v1/users/create').
+      with(
+        :body => { 'name' => 'user name' }
+      ).
+      to_return(
+        :body => '{"id":"1", "name":"user name", "disable_toopher_auth":false}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    user = toopher.create_user('user name')
+    assert(user.id == '1', 'wrong user id')
+    assert(user.name == 'user name', 'wrong user name')
+    assert(user.disable_toopher_auth == false, 'user should not be disabled')
+  end
+
   def test_toopher_request_error()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(

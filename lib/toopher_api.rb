@@ -146,6 +146,12 @@ class ToopherAPI
     return UserTerminal.new(post('user_terminals/create', params))
   end
 
+  def create_user(username, **kwargs)
+    params = { :name => username }
+    params.merge!(kwargs)
+    return User.new(post('users/create', params))
+  end
+
   def set_toopher_enabled_for_user(user_name, enabled)
     uri = 'users'
     users = get(uri, {"name" => user_name})
