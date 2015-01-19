@@ -416,6 +416,59 @@ class TestToopher < Test::Unit::TestCase
     assert(result == true, 'http request returns error status')
   end
 
+  def test_get()
+    stub_http_request(:get, 'https://toopher.test/v1/pairings/1').
+      to_return(
+        :body => {
+            :id => '1',
+            :enabled => true,
+            :user => {
+              :id => '1',
+              :name => 'user name'
+            }
+          }.to_json,
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    result = toopher.get('pairings/1')
+    assert(result['id'] == '1', 'wrong pairing id')
+    assert(result['enabled'] == true, 'pairing should be enabled')
+    assert(result['user']['id'] == '1', 'wrong user id')
+    assert(result['user']['name'] == 'user name', 'wrong user name')
+  end
+
+  def test_post()
+    stub_http_request(:post, 'https://toopher.test/v1/user_terminals/create').
+      with(
+        :body => {
+          :name => 'term name',
+          :name_extra => 'requester terminal id',
+          :user_name => 'user name'
+        }
+      ).
+      to_return(
+        :body => {
+          :id => '1',
+          :name => 'term name',
+          :name_extra => 'requester terminal id',
+          :user => {
+            :id => '1',
+            :name => 'user name'
+          }
+        }.to_json,
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    result = toopher.post('user_terminals/create', :name => 'term name', :name_extra => 'requester terminal id', :user_name => 'user name')
+    assert(result['id'] == '1', 'wrong terminal id')
+    assert(result['name'] == 'term name', 'wrong terminal name')
+    assert(result['name_extra'] == 'requester terminal id', 'wrong terminal name extra')
+    assert(result['user']['id'] == '1', 'wrong user id')
+    assert(result['user']['name'] == 'user name', 'wrong user name')
+  end
+
   def test_toopher_request_error()
     stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
       to_return(

@@ -188,7 +188,6 @@ class ToopherAPI
     return true # would raise error in parse_request_error() if failed
   end
 
-  private
   def post(endpoint, **kwargs)
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
@@ -206,6 +205,7 @@ class ToopherAPI
     return request(url, req)
   end
 
+  private
   def request(url, req)
     req['User-Agent'] = "Toopher-Ruby/#{VERSION} (Ruby #{RUBY_VERSION})"
     http = Net::HTTP::new(url.host, url.port)
