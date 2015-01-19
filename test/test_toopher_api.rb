@@ -38,7 +38,7 @@ class TestToopher < Test::Unit::TestCase
       )
 
       toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.pair('immediate_pair', 'user')
+      pairing = toopher.pair('user', 'immediate_pair')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.user_id == '1', 'bad user id')
@@ -57,11 +57,62 @@ class TestToopher < Test::Unit::TestCase
       )
 
       toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.pair('immediate_pair', 'user', :test_param => 'foo')
+      pairing = toopher.pair('user', 'immediate_pair', :test_param => 'foo')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'user', 'bad user name')
+  end
+
+  def test_create_sms_pairing_success()
+    stub_http_request(:post, "https://toopher.test/v1/pairings/create/sms").
+      with(
+        :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555'}
+      ).
+      to_return(
+        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    pairing = toopher.pair('user', '555-555-5555')
+    assert(pairing.id == '1', 'bad pairing id')
+    assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.user_id == '1', 'bad user id')
+    assert(pairing.user_name == 'user', 'bad user name')
+
+    stub_http_request(:post, "https://toopher.test/v1/pairings/create/sms").
+      with(
+        :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555', 'country_code' => '1'}
+      ).
+      to_return(
+        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :status => 200
+      )
+
+    pairing = toopher.pair('user', '555-555-5555', :country_code => '1')
+    assert(pairing.id == '1', 'bad pairing id')
+    assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.user_id == '1', 'bad user id')
+    assert(pairing.user_name == 'user', 'bad user name')
+  end
+
+  def test_create_qr_pairing_success()
+    stub_http_request(:post, "https://toopher.test/v1/pairings/create/qr").
+      with(
+        :body => { 'user_name' => 'user' }
+      ).
+      to_return(
+        :body => '{"id":"1", "enabled":true, "user": { "id":"1", "name":"user"} }',
+        :status => 200
+      )
+
+    toopher  = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    pairing = toopher.pair('user')
+    assert(pairing.id == '1', 'bad pairing id')
+    assert(pairing.enabled == true, 'pairing not enabled')
+    assert(pairing.user_id == '1', 'bad user id')
+    assert(pairing.user_name == 'user', 'bad user name')
   end
 
   def test_get_pairing_status()
