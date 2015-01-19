@@ -429,4 +429,18 @@ class User
     @disable_toopher_auth = result['disable_toopher_auth']
     @raw = result
   end
+
+  def enable(api)
+    params = { :disable_toopher_auth => false }
+    api.post('users/' + @id, params)
+    @disable_toopher_auth = false
+    @raw['disable_toopher_auth'] = false
+  end
+
+  def disable(api)
+    params = { :disable_toopher_auth => true }
+    api.post('users/' + @id, params)
+    @disable_toopher_auth = true
+    @raw['disable_toopher_auth'] = true
+  end
 end

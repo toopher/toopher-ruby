@@ -870,4 +870,40 @@ class TestUser < Test::Unit::TestCase
     assert(user.name == 'user name changed', 'bad user name')
     assert(user.disable_toopher_auth == true, 'user should be disabled')
   end
+
+  def disable_user(disable)
+    user = User.new(
+      'id' => '1',
+      'name' => 'user name',
+      'disable_toopher_auth' => !disable
+    )
+
+    stub_http_request(:post, 'https://toopher.test/v1/users/1').
+      with(
+        :body => { 'disable_toopher_auth' => "#{disable}" }
+      ).
+      to_return(
+        :body => '{}',
+        :status => 200
+      )
+
+    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    assert_nothing_raised do
+      if disable
+        user.disable(toopher)
+        assert(user.disable_toopher_auth == true, 'user should be disabled')
+      else
+        user.enable(toopher)
+        assert(user.disable_toopher_auth == false, 'user should be enabled')
+      end
+    end
+  end
+
+  def test_enable()
+    disable_user(false)
+  end
+
+  def test_disable()
+    disable_user(true)
+  end
 end
