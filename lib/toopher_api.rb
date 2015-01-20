@@ -354,6 +354,14 @@ class AuthenticationRequest
     @terminal_name_extra = result['terminal']['name_extra']
     @raw = result
   end
+
+  def authenticate_with_otp(otp, api, **kwargs)
+    url = 'authentication_requests/' + @id + '/otp_auth'
+    params = { :otp => otp }
+    params.merge!(kwargs)
+    result = api.post(url, params)
+    return AuthenticationRequest.new(result)
+  end
 end
 
 class UserTerminal
