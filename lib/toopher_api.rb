@@ -116,16 +116,6 @@ class ToopherAPI
     return AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
   end
 
-  def create_user_terminal(username, terminal_name, requester_terminal_id, **kwargs)
-    params = {
-      :user_name => username,
-      :name => terminal_name,
-      :name_extra => requester_terminal_id
-    }
-    params.merge!(kwargs)
-    return UserTerminal.new(@advanced.raw.post('user_terminals/create', params))
-  end
-
   def enable_user(username)
     set_toopher_disabled_for_user(username, false)
   end
@@ -420,6 +410,20 @@ class UserTerminals
   # @param [String] terminal_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal.
   def get_by_id(terminal_id)
     return UserTerminal.new(@raw.get('user_terminals/' + terminal_id))
+  end
+
+  # Create a new user terminal
+  #
+  # @param [String] username The human recognizable user name of the user you wish to associate this user terminal.
+  # @param [String] terminal_name The human recognizable terminal name.
+  def create(username, terminal_name, requester_terminal_id, **kwargs)
+    params = {
+      :user_name => username,
+      :name => terminal_name,
+      :name_extra => requester_terminal_id
+    }
+    params.merge!(kwargs)
+    return UserTerminal.new(@raw.post('user_terminals/create', params))
   end
 
 end

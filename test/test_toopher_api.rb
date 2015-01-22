@@ -290,7 +290,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    terminal = @toopher.create_user_terminal(@user[:name], @terminal[:name], @terminal[:name_extra])
+    terminal = @toopher.advanced.user_terminals.create(@user[:name], @terminal[:name], @terminal[:name_extra])
     compare_to_default_terminal(terminal)
   end
 
