@@ -336,6 +336,69 @@ class TestToopher < Test::Unit::TestCase
     assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'wrong user disabled status')
   end
 
+  def test_get_user_by_name()
+    stub_http_request(:get, 'https://toopher.test/v1/users?name=' + @user[:name]).
+      to_return(
+        :body => [
+          {
+            :requester => {
+              :name => 'toopher.test',
+              :id => 'requester1'
+            },
+            :id => @user[:id],
+            :name => @user[:name],
+            :disable_toopher_auth => @user[:disable_toopher_auth]
+          }
+        ].to_json
+      )
+
+    user = @toopher.advanced.users.get_by_name(@user[:name])
+    assert(user.id == @user[:id], 'bad user id')
+    assert(user.name == @user[:name], 'bad user name')
+    assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'bad user disabled status')
+  end
+
+  def test_no_user_to_get_by_name_raises_correct_error()
+    stub_http_request(:get, 'https://toopher.test/v1/users?name=' + @user[:name]).
+      to_return(
+        :body => '[]',
+        :status => 200
+      )
+    assert_raise ToopherApiError do
+      user = @toopher.advanced.users.get_by_name(@user[:name])
+    end
+  end
+
+  def test_multiple_users_to_get_by_name_raises_correct_error()
+    stub_http_request(:get, 'https://toopher.test/v1/users?name=' + @user[:name]).
+      to_return(
+        :body => [
+          {
+            :requester => {
+              :name => 'toopher.test',
+              :id => 'requester1'
+            },
+            :id => 'ser1',
+            :name => 'user',
+            :disable_toopher_auth => false
+          },
+          {
+            :requester => {
+              :name => 'toopher.test',
+              :id => 'requester1',
+            },
+            :id => 'user2',
+            :name => 'user',
+            :disable_toopher_auth => false
+          }
+        ].to_json,
+        :status => 200
+      )
+    assert_raise ToopherApiError do
+      user = @toopher.advanced.users.get_by_name(@user[:name])
+    end
+  end
+
   def disable_user(disable)
     user = User.new(
       'id' => '1',

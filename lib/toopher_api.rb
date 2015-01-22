@@ -482,6 +482,21 @@ class Users
     return User.new(@raw.get('users/' + user_id))
   end
 
+  # Check on the status of a user
+  #
+  # @param [String] name The human recognizable user name.
+  def get_by_name(username)
+    params = { :name => username }
+    users = @raw.get('users', params)
+    if users.count > 1
+      raise ToopherApiError, 'Multiple users with name = #{username}'
+    elsif users.count == 0
+      raise ToopherApiError, 'No users with name = #{username}'
+    end
+
+    return User.new(users[0])
+  end
+
   # Create a new user
   #
   # @param [String] username The human recognizable user name.
