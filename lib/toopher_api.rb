@@ -455,7 +455,7 @@ end
 
 class User
   # @!attribute id
-  #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal. It can be used to request status information for the user terminal.
+  #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this user. It can be used to request status information for the user.
   attr_accessor :id
 
   # @!attribute name
