@@ -591,15 +591,15 @@ class TestPairing < Test::Unit::TestCase
   def setup
     @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {
-        'id' => UUIDTools::UUID.random_create().to_str(),
-        'name' => 'user',
-        'disable_toopher_auth' => false
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'user',
+      'disable_toopher_auth' => false
     }
     @pairing = {
-        'id' => UUIDTools::UUID.random_create().to_str(),
-        'enabled' => true,
-        'pending' => false,
-        'user' => @user
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'enabled' => true,
+      'pending' => false,
+      'user' => @user
     }
   end
 
@@ -639,12 +639,30 @@ class TestPairing < Test::Unit::TestCase
 
     stub_http_request(:get, "https://toopher.test/v1/pairings/1").
       to_return(
-        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"paired user changed name"}}',
+        :body => {
+          :id => '1',
+          :enabled => true,
+          :pending => false,
+          :user => {
+            :id => '1',
+            :name => 'paired user changed name',
+            :disable_toopher_auth => false
+          }
+        }.to_json,
         :status => 200
       )
     stub_http_request(:get, "https://toopher.test/v1/pairings/2").
       to_return(
-        :body => '{"id":"2","enabled":false,"pending":false,"user":{"id":"2","name":"unpaired user changed name"}}',
+        :body => {
+          :id => '2',
+          :enabled => false,
+          :pending => false,
+          :user => {
+            :id => '2',
+            :name => 'unpaired user changed name',
+            :disable_toopher_auth => false
+          }
+        }.to_json,
         :status => 200
       )
 
