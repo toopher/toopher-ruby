@@ -5,8 +5,65 @@ require 'toopher_api'
 require 'uuidtools'
 
 class TestToopher < Test::Unit::TestCase
-  def test_constructor()
+  def setup
+    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @user = {
+      :id => UUIDTools::UUID.random_create().to_str(),
+      :name => 'user'
+    }
+    @pairing = {
+      :id => UUIDTools::UUID.random_create().to_str(),
+      :enabled => true,
+      :pending => false,
+      :user => @user
+    }
+    @terminal = {
+      :id => UUIDTools::UUID.random_create().to_str(),
+      :name => 'term name',
+      :name_extra => 'requester terminal id',
+      :user => @user
+    }
+    @auth_request = {
+      :id => UUIDTools::UUID.random_create().to_str(),
+      :pending => false,
+      :granted => true,
+      :automated => true,
+      :reason => 'some reason',
+      :terminal => @terminal
+    }
+  end
 
+  def compare_to_default_terminal(actual_terminal)
+    assert(actual_terminal.id == @terminal[:id], 'wrong terminal id')
+    assert(actual_terminal.name == @terminal[:name], 'wrong terminal name')
+    assert(actual_terminal.name_extra == @terminal[:name_extra], 'wrong terminal name extra')
+    assert(actual_terminal.user_name == @terminal[:user][:name], 'wrong user name')
+    assert(actual_terminal.user_id == @terminal[:user][:id], 'wrong user id')
+    assert(actual_terminal.raw['user']['name'] == @terminal[:user][:name], 'could not access raw data')
+  end
+
+  def compare_to_default_pairing(actual_pairing)
+    assert(actual_pairing.id == @pairing[:id], 'bad pairing id')
+    assert(actual_pairing.enabled == @pairing[:enabled], 'bad pairing enabled')
+    assert(actual_pairing.pending == @pairing[:pending], 'bad pairing pending')
+    assert(actual_pairing.user_id == @pairing[:user][:id], 'bad user id')
+    assert(actual_pairing.user_name == @pairing[:user][:name], 'bad user name')
+    assert(actual_pairing.raw['user']['name'] == @pairing[:user][:name], 'could not access raw data')
+  end
+
+  def compare_to_default_auth_request(actual_auth_request)
+    assert(actual_auth_request.id == @auth_request[:id], 'bad auth id')
+    assert(actual_auth_request.pending == @auth_request[:pending], 'bad auth pending')
+    assert(actual_auth_request.granted == @auth_request[:granted], 'bad auth granted')
+    assert(actual_auth_request.automated == @auth_request[:automated], 'bad auth automated')
+    assert(actual_auth_request.reason == @auth_request[:reason], 'bad auth reason')
+    assert(actual_auth_request.terminal_id == @auth_request[:terminal][:id], 'bad auth terminal id')
+    assert(actual_auth_request.terminal_name == @auth_request[:terminal][:name], 'bad auth terminal name')
+    assert(actual_auth_request.terminal_name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
+    assert(actual_auth_request.raw['terminal']['name_extra'] == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
+  end
+
+  def test_constructor()
     assert_raise ArgumentError do
       api = ToopherAPI.new
     end
@@ -28,120 +85,123 @@ class TestToopher < Test::Unit::TestCase
   def test_create_pairing_immediate_success()
     stub_http_request(:post, "https://toopher.test/v1/pairings/create").
       with(
-#        :headers => {
-#          'Authorization' => 'OAuth oauth_consumer_key="key",oauth_nonce="nonce",oauth_signature="%2FW9rUAFDuJTTBtfSxeQ%2FDxWpVQY%3D",oauth_signature_method="HMAC-SHA1",oauth_timestamp="0",oauth_version="1.0"'
-#          },
-        :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' }
+        :body => {
+          :pairing_phrase => 'immediate_pair',
+          :user_name => @user[:name]
+        }
       ).
       to_return(
-        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"user"}}',
+        :body => @pairing.to_json,
         :status => 200
       )
 
-      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.pair('user', 'immediate_pair')
-      assert(pairing.id == '1', 'bad pairing id')
-      assert(pairing.enabled == true, 'pairing not enabled')
-      assert(pairing.pending == false, 'pairing is pending')
-      assert(pairing.user_id == '1', 'bad user id')
-      assert(pairing.user_name == 'user', 'bad user name')
-      assert(pairing.raw['user']['name'] == 'user', 'could not access raw data')
+      pairing = @toopher.pair(@user[:name], 'immediate_pair')
+      compare_to_default_pairing(pairing)
   end
 
   def test_create_pairing_with_optional_arg()
     stub_http_request(:post, "https://toopher.test/v1/pairings/create").
       with(
-        :body => { 'pairing_phrase' => 'immediate_pair', 'user_name' => 'user' , 'test_param' => 'foo'}
+        :body => {
+          :pairing_phrase => 'immediate_pair',
+          :user_name => @user[:name],
+          :test_param => 'foo'
+        }
       ).
       to_return(
-        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"user"}}',
+        :body => @pairing.to_json,
         :status => 200
       )
 
-      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.pair('user', 'immediate_pair', :test_param => 'foo')
-      assert(pairing.id == '1', 'bad pairing id')
-      assert(pairing.enabled == true, 'pairing not enabled')
-      assert(pairing.pending == false, 'pairing is pending')
-      assert(pairing.user_id == '1', 'bad user id')
-      assert(pairing.user_name == 'user', 'bad user name')
+      pairing = @toopher.pair(@user[:name], 'immediate_pair', :test_param => 'foo')
+      compare_to_default_pairing(pairing)
   end
 
   def test_create_sms_pairing_success()
     stub_http_request(:post, "https://toopher.test/v1/pairings/create/sms").
       with(
-        :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555'}
+        :body => {
+          :user_name => @user[:name],
+          :phone_number => '555-555-5555'
+        }
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
+        :body => @pairing.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    pairing = toopher.pair('user', '555-555-5555')
-    assert(pairing.id == '1', 'bad pairing id')
-    assert(pairing.enabled == true, 'pairing not enabled')
-    assert(pairing.pending == false, 'pairing is pending')
-    assert(pairing.user_id == '1', 'bad user id')
-    assert(pairing.user_name == 'user', 'bad user name')
+    pairing = @toopher.pair(@user[:name], '555-555-5555')
+    compare_to_default_pairing(pairing)
 
     stub_http_request(:post, "https://toopher.test/v1/pairings/create/sms").
       with(
-        :body => { 'user_name' => 'user', 'phone_number' => '555-555-5555', 'country_code' => '1'}
+        :body => {
+          :user_name => @user[:name],
+          :phone_number => '555-555-5555',
+          :country_code => '1'
+        }
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
+        :body => @pairing.to_json,
         :status => 200
       )
 
-    pairing = toopher.pair('user', '555-555-5555', :country_code => '1')
-    assert(pairing.id == '1', 'bad pairing id')
-    assert(pairing.enabled == true, 'pairing not enabled')
-    assert(pairing.pending == false, 'pairing is pending')
-    assert(pairing.user_id == '1', 'bad user id')
-    assert(pairing.user_name == 'user', 'bad user name')
+    pairing = @toopher.pair(@user[:name], '555-555-5555', :country_code => '1')
+    compare_to_default_pairing(pairing)
   end
 
   def test_create_qr_pairing_success()
     stub_http_request(:post, "https://toopher.test/v1/pairings/create/qr").
       with(
-        :body => { 'user_name' => 'user' }
+        :body => {
+          :user_name => @user[:name]
+        }
       ).
       to_return(
-        :body => '{"id":"1", "enabled":true, "pending":false, "user": { "id":"1", "name":"user"} }',
+        :body => @pairing.to_json,
         :status => 200
       )
 
-    toopher  = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    pairing = toopher.pair('user')
-    assert(pairing.id == '1', 'bad pairing id')
-    assert(pairing.enabled == true, 'pairing not enabled')
-    assert(pairing.pending == false, 'pairing is pending')
-    assert(pairing.user_id == '1', 'bad user id')
-    assert(pairing.user_name == 'user', 'bad user name')
+    pairing = @toopher.pair(@user[:name])
+    compare_to_default_pairing(pairing)
   end
 
   def test_get_pairing_by_id()
     stub_http_request(:get, "https://toopher.test/v1/pairings/1").
       to_return(
-        :body => '{"id":"1","enabled":true,"pending":false,"user":{"id":"1","name":"paired user"}}',
+        :body => {
+          :id => '1',
+          :enabled => true,
+          :pending => false,
+          :user => {
+            :id => '1',
+            :name => 'paired user'
+          }
+        }.to_json,
         :status => 200
       )
     stub_http_request(:get, "https://toopher.test/v1/pairings/2").
       to_return(
-        :body => '{"id":"2","enabled":false,"pending":true, "user":{"id":"2","name":"unpaired user"}}',
+        :body => {
+          :id => '2',
+          :enabled => false,
+          :pending => true,
+          :user => {
+            :id => '2',
+            :name => 'unpaired user'
+          }
+        }.to_json,
         :status => 200
       )
 
-      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing = toopher.get_pairing_by_id('1')
+      pairing = @toopher.get_pairing_by_id('1')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.pending == false, 'pairing is pending')
       assert(pairing.user_id == '1', 'bad user id')
       assert(pairing.user_name == 'paired user', 'bad user name')
 
-      pairing = toopher.get_pairing_by_id('2')
+      pairing = @toopher.get_pairing_by_id('2')
       assert(pairing.id == '2', 'bad pairing id')
       assert(pairing.enabled == false, 'pairing should not be enabled')
       assert(pairing.pending == true, 'pairing is not pending')
@@ -150,173 +210,126 @@ class TestToopher < Test::Unit::TestCase
   end
 
   def test_create_authentication_with_no_action()
-    uuid = UUIDTools::UUID.random_create().to_str()
-
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       with(
-        :body => { 'pairing_id' => uuid, 'terminal_name' => 'term name' }
+        :body => {
+          :pairing_id => @pairing[:id],
+          :terminal_name => @terminal[:name]
+        }
       ).
       to_return(
-        :body => '{"id":"' + uuid + '","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
+        :body => @auth_request.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.authenticate(uuid, 'term name')
-    assert(auth_request.id == uuid, 'wrong auth id')
-    assert(auth_request.pending == false, 'wrong auth pending')
-    assert(auth_request.granted == true, 'wrong auth granted')
-    assert(auth_request.automated == true, 'wrong auth automated')
-    assert(auth_request.reason == 'some reason', 'wrong auth reason')
-    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
-    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
+    auth_request = @toopher.authenticate(@pairing[:id], @terminal[:name])
+    compare_to_default_auth_request(auth_request)
   end
 
   def test_create_authentication_with_optional_arg()
-    uuid = UUIDTools::UUID.random_create().to_str()
-
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       with(
-        :body => { 'pairing_id' => uuid, 'terminal_name' => 'term name', 'test_param' => 'foo' }
+        :body => {
+          :pairing_id => @auth_request[:id],
+          :terminal_name => @terminal[:name],
+          :test_param => 'foo' 
+        }
       ).
       to_return(
-        :body => '{"id":"' + uuid + '","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
+        :body => @auth_request.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.authenticate(uuid, 'term name', :test_param => 'foo')
-    assert(auth_request.id == uuid, 'wrong auth id')
-    assert(auth_request.pending == false, 'wrong auth pending')
-    assert(auth_request.granted == true, 'wrong auth granted')
-    assert(auth_request.automated == true, 'wrong auth automated')
-    assert(auth_request.reason == 'some reason', 'wrong auth reason')
-    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
-    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
+    auth_request = @toopher.authenticate(@auth_request[:id], @terminal[:name], :test_param => 'foo')
+    compare_to_default_auth_request(auth_request)
   end
 
   def test_create_authentication_with_username()
     stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
       with(
-        :body => { 'user_name' => 'user', 'terminal_name_extra' => 'term name extra' }
+        :body => {
+          :user_name => @user[:name],
+          :terminal_name_extra => @terminal[:name_extra]
+        }
       ).
       to_return(
-        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name", "name_extra":"term name extra"}}',
+        :body => @auth_request.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.authenticate('user', 'term name extra')
-    assert(auth_request.id == '1', 'wrong auth id')
-    assert(auth_request.pending == false, 'wrong auth pending')
-    assert(auth_request.granted == true, 'wrong auth granted')
-    assert(auth_request.automated == true, 'wrong auth automated')
-    assert(auth_request.reason == 'some reason', 'wrong auth reason')
-    assert(auth_request.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth_request.terminal_name == 'term name', 'wrong auth terminal name')
-    assert(auth_request.terminal_name_extra == 'term name extra', 'wrong auth terminal name')
+    auth_request = @toopher.authenticate(@user[:name], @terminal[:name_extra])
+    compare_to_default_auth_request(auth_request)
   end
 
   def test_get_authentication_request_by_id()
-    stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
+    stub_http_request(:get, "https://toopher.test/v1/authentication_requests/" + @auth_request[:id]).
       to_return(
-        :body => '{"id":"1","pending":false,"granted":true,"automated":true,"reason":"some reason","terminal":{"id":"1","name":"term name"}}',
-        :status => 200
-      )
-    stub_http_request(:get, "https://toopher.test/v1/authentication_requests/2").
-      to_return(
-        :body => '{"id":"2","pending":true,"granted":false,"automated":false,"reason":"some other reason","terminal":{"id":"2","name":"another term name"}}',
+        :body => @auth_request.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth = toopher.get_authentication_request_by_id('1')
-    assert(auth.id == '1', 'wrong auth id')
-    assert(auth.pending == false, 'wrong auth pending')
-    assert(auth.granted == true, 'wrong auth granted')
-    assert(auth.automated == true, 'wrong auth automated')
-    assert(auth.reason == 'some reason', 'wrong auth reason')
-    assert(auth.terminal_id == '1', 'wrong auth terminal id')
-    assert(auth.terminal_name == 'term name', 'wrong auth terminal name')
-    assert(auth.raw['terminal']['name'] == 'term name', 'could not access raw data')
-
-    auth = toopher.get_authentication_request_by_id('2')
-    assert(auth.id == '2', 'wrong auth id')
-    assert(auth.pending == true, 'wrong auth pending')
-    assert(auth.granted == false, 'wrong auth granted')
-    assert(auth.automated == false, 'wrong auth automated')
-    assert(auth.reason == 'some other reason', 'wrong auth reason')
-    assert(auth.terminal_id == '2', 'wrong auth terminal id')
-    assert(auth.terminal_name == 'another term name', 'wrong auth terminal name')
-    assert(auth.raw['terminal']['name'] == 'another term name', 'could not access raw data')
+    auth_request = @toopher.get_authentication_request_by_id(@auth_request[:id])
+    compare_to_default_auth_request(auth_request)
   end
 
   def test_create_user_terminal()
     stub_http_request(:post, 'https://toopher.test/v1/user_terminals/create').
       with(
-        :body => { 'user_name' => 'user name', 'name' => 'term name', 'name_extra' => 'requester terminal id'}
+        :body => {
+          :user_name => @user[:name],
+          :name => @terminal[:name],
+          :name_extra => @terminal[:name_extra]
+        }
       ).
       to_return(
-        :body => '{"id":"1", "name":"term name", "name_extra":"term name extra", "user":{"name":"user name", "id":"1"}}',
+        :body => @terminal.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    terminal = toopher.create_user_terminal('user name', 'term name', 'requester terminal id')
-    assert(terminal.id == '1', 'wrong terminal id')
-    assert(terminal.name == 'term name', 'wrong terminal name')
-    assert(terminal.name_extra == 'term name extra')
-    assert(terminal.user_name == 'user name', 'wrong user name')
-    assert(terminal.user_id == '1', 'wrong user id')
+    terminal = @toopher.create_user_terminal(@user[:name], @terminal[:name], @terminal[:name_extra])
+    compare_to_default_terminal(terminal)
   end
 
   def test_get_user_terminal_by_id()
-    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/1').
+    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/' + @terminal[:id]).
       to_return(
-        :body => '{"id":"1", "name":"term name", "name_extra":"term name extra", "user":{"name":"user name", "id":"1"}}',
+        :body => @terminal.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    terminal = toopher.get_user_terminal_by_id('1')
-    assert(terminal.id == '1', 'wrong terminal id')
-    assert(terminal.name == 'term name', 'wrong terminal name')
-    assert(terminal.name_extra == 'term name extra')
-    assert(terminal.user_name == 'user name', 'wrong user name')
-    assert(terminal.user_id == '1', 'wrong user id')
+    terminal = @toopher.get_user_terminal_by_id(@terminal[:id])
+    compare_to_default_terminal(terminal)
   end
 
   def test_create_user()
     stub_http_request(:post, 'https://toopher.test/v1/users/create').
       with(
-        :body => { 'name' => 'user name' }
+        :body => {
+          :name => @user[:name]
+        }
       ).
       to_return(
-        :body => '{"id":"1", "name":"user name", "disable_toopher_auth":false}',
+        :body => @user.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    user = toopher.create_user('user name')
-    assert(user.id == '1', 'wrong user id')
-    assert(user.name == 'user name', 'wrong user name')
-    assert(user.disable_toopher_auth == false, 'user should not be disabled')
+    user = @toopher.create_user(@user[:name])
+    assert(user.id == @user[:id], 'wrong user id')
+    assert(user.name == @user[:name], 'wrong user name')
+    assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'wrong user disabled status')
   end
 
   def test_get_user_by_id()
-    stub_http_request(:get, 'https://toopher.test/v1/users/1').
+    stub_http_request(:get, 'https://toopher.test/v1/users/' + @user[:id]).
       to_return(
-        :body => '{"id":"1", "name":"user name", "disable_toopher_auth":false}',
+        :body => @user.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    user = toopher.get_user_by_id('1')
-    assert(user.id == '1', 'wrong user id')
-    assert(user.name == 'user name', 'wrong user name')
-    assert(user.disable_toopher_auth == false, 'user should not be disabled')
+    user = @toopher.get_user_by_id(@user[:id])
+    assert(user.id == @user[:id], 'wrong user id')
+    assert(user.name == @user[:name], 'wrong user name')
+    assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'wrong user disabled status')
   end
 
   def disable_user(disable)
@@ -330,9 +343,9 @@ class TestToopher < Test::Unit::TestCase
       to_return(
         :body => [
           {
-            "id" => "1",
-            "name" => "user name",
-            "disable_toopher_auth" => !disable
+            :id => user.id,
+            :name => user.name,
+            :disable_toopher_auth => !disable
           }
         ].to_json,
         :status => 200
@@ -340,32 +353,33 @@ class TestToopher < Test::Unit::TestCase
 
     stub_http_request(:post, 'https://toopher.test/v1/users/1').
       with(
-        :body => { 'disable_toopher_auth' => "#{disable}" }
+        :body => {
+          :disable_toopher_auth => disable.to_s
+        }
       ).
       to_return(
         :body => '{}',
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_nothing_raised do
       if disable
-        toopher.disable_user(user.name)
+        @toopher.disable_user(user.name)
       else
-        toopher.enable_user(user.name)
+        @toopher.enable_user(user.name)
       end
     end
 
     stub_http_request(:get, 'https://toopher.test/v1/users/1').
       to_return(
         :body => {
-            "id" => "1",
-            "name" => "user name",
-            "disable_toopher_auth" => disable
-          }.to_json,
+            :id => '1',
+            :name => 'user name',
+            :disable_toopher_auth => disable
+        }.to_json,
         :status => 200
       )
-    user = toopher.get_user_by_id('1')
+    user = @toopher.get_user_by_id(user.id)
     assert(user.id == '1', 'wrong user id')
     assert(user.name == 'user name', 'wrong user name')
     assert(user.disable_toopher_auth == disable, 'user should be enabled')
@@ -379,216 +393,14 @@ class TestToopher < Test::Unit::TestCase
     disable_user(true)
   end
 
-  def test_reset_user()
-    stub_http_request(:post, 'https://toopher.test/v1/users/reset').
-      with(
-        :body => { 'name' => 'user name'}
-      ).
-      to_return(
-        :body => '[]',
-        :status => 200
-      )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    result = toopher.reset_user('user name')
-    assert(result == true)
-  end
-
-  def test_get_pairing_reset_link()
-    stub_http_request(:post, "https://toopher.test/v1/pairings/1/generate_reset_link").
-      to_return(
-        :body => {
-          :url => 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde'
-          }.to_json,
-        :status => 200
-      )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    reset_link = toopher.get_pairing_reset_link('1')
-    assert(reset_link == 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde')
-  end
-
-  def test_email_pairing_reset_link_to_user()
-    stub_http_request(:post, 'https://toopher.test/v1/pairings/1/send_reset_link').
-      with(
-        :body => { 'reset_email' => 'email' }
-      ).
-      to_return(
-        :body => '[]',
-        :status => 201
-      )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    result = toopher.email_pairing_reset_link_to_user('1', 'email')
-    assert(result == true, 'http request returns error status')
-  end
-
-  def test_get()
-    stub_http_request(:get, 'https://toopher.test/v1/pairings/1').
-      to_return(
-        :body => {
-            :id => '1',
-            :enabled => true,
-            :pending => false,
-            :user => {
-              :id => '1',
-              :name => 'user name'
-            }
-          }.to_json,
-        :status => 200
-      )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    result = toopher.get('pairings/1')
-    assert(result['id'] == '1', 'wrong pairing id')
-    assert(result['enabled'] == true, 'pairing should be enabled')
-    assert(result['pending'] == false, 'pairing should not be pending')
-    assert(result['user']['id'] == '1', 'wrong user id')
-    assert(result['user']['name'] == 'user name', 'wrong user name')
-  end
-
-  def test_post()
-    stub_http_request(:post, 'https://toopher.test/v1/user_terminals/create').
-      with(
-        :body => {
-          :name => 'term name',
-          :name_extra => 'requester terminal id',
-          :user_name => 'user name'
-        }
-      ).
-      to_return(
-        :body => {
-          :id => '1',
-          :name => 'term name',
-          :name_extra => 'requester terminal id',
-          :user => {
-            :id => '1',
-            :name => 'user name'
-          }
-        }.to_json,
-        :status => 200
-      )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    result = toopher.post('user_terminals/create', :name => 'term name', :name_extra => 'requester terminal id', :user_name => 'user name')
-    assert(result['id'] == '1', 'wrong terminal id')
-    assert(result['name'] == 'term name', 'wrong terminal name')
-    assert(result['name_extra'] == 'requester terminal id', 'wrong terminal name extra')
-    assert(result['user']['id'] == '1', 'wrong user id')
-    assert(result['user']['name'] == 'user name', 'wrong user name')
-  end
-
-  def test_toopher_request_error()
-    stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
-      to_return(
-        :body => '{"error_code":401,"error_message":"Not a valid OAuth signed request"}',
-        :status => 401
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise ToopherApiError do
-      auth = toopher.get_authentication_request_by_id('1')
-    end
-  end
-
-  def test_disabled_user_raises_correct_error()
-    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
-      to_return(
-        :body => '{"error_code":704,"error_message":"disabled user"}',
-        :status => 409
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise UserDisabledError do
-      auth_request = toopher.authenticate('disabled user', 'terminal name')
-    end
-  end
-
-  def test_unknown_user_raises_correct_error()
-    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
-      to_return(
-        :body => '{"error_code":705,"error_message":"disabled user"}',
-        :status => 409
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise UnknownUserError do
-      auth_request = toopher.authenticate('unknown user', 'terminal name')
-    end
-  end
-
-  def test_unknown_terminal_raises_correct_error()
-    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
-      to_return(
-        :body => '{"error_code":706, "error_message":"unknown terminal"}',
-        :status => 409
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise UnknownTerminalError do
-      auth_request = toopher.authenticate('user', 'unknown terminal name')
-    end
-  end
-
-  def test_disabled_pairing_raises_correct_error()
-    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
-      to_return(
-        :body => '{"error_code":601, "error_message":"pairing has been deactivated"}',
-        :status => 601
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise PairingDeactivatedError do
-      auth_request = toopher.authenticate('user', 'terminal name')
-    end
-  end
-
-  def test_unauthorized_pairing_raises_correct_error()
-    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
-      to_return(
-        :body => '{"error_code":601, "error_message":"pairing has not been authorized"}',
-        :status => 601
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    assert_raise PairingDeactivatedError do
-      auth_request = toopher.authenticate('user', 'terminal name')
-    end
-  end
-
-  def test_one_user_to_enable_raises_no_error()
-    stub_http_request(:get, "https://toopher.test/v1/users?name=user").
-      to_return(
-        :body => [ {
-            "requester" => {
-              "name" => "toopher.test",
-              "id" => "requester1"
-            },
-            "id" => "user1",
-            "name" => "user"
-          } ].to_json,
-        :status => 200
-      )
-    stub_http_request(:post, "https://toopher.test/v1/users/user1").
-      to_return(
-        :body => {
-          "disable_toopher_auth" => true,
-          "name" => "test",
-          "requester" => {
-            "name" => "toopher.com",
-            "id" => "requester1"
-          },
-          "id" => "user1",
-        }.to_json,
-        :status => 200
-      )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request = toopher.enable_user('user')
-  end
-
   def test_no_user_to_enable_raises_correct_error()
     stub_http_request(:get, "https://toopher.test/v1/users?name=user").
       to_return(
-        :body => [ ].to_json,
+        :body => '[]',
         :status => 200
       )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.enable_user('user')
+      auth_request = @toopher.enable_user('user')
     end
   end
 
@@ -597,27 +409,191 @@ class TestToopher < Test::Unit::TestCase
       to_return(
         :body => [
           {
-            "requester" => {
-              "name" => "toopher.test",
-              "id" => "requester1"
+            :requester => {
+              :name => 'toopher.test',
+              :id => 'requester1'
             },
-            "id" => "user1",
-            "name" => "user"
+            :id => 'ser1',
+            :name => 'user'
           },
           {
-            "requester" => {
-              "name" => "toopher.test",
-              "id" => "requester1",
+            :requester => {
+              :name => 'toopher.test',
+              :id => 'requester1',
             },
-            "id" => "user2",
-            "name" => "user"
+            :id => 'user2',
+            :name => 'user'
           }
         ].to_json,
         :status => 200
       )
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_raise ToopherApiError do
-      auth_request = toopher.enable_user('user')
+      auth_request = @toopher.enable_user('user')
+    end
+  end
+
+  def test_reset_user()
+    stub_http_request(:post, 'https://toopher.test/v1/users/reset').
+      with(
+        :body => {
+          :name => @user[:name]
+        }
+      ).
+      to_return(
+        :body => '[]',
+        :status => 200
+      )
+
+    result = @toopher.reset_user(@user[:name])
+    assert(result == true)
+  end
+
+  def test_get_pairing_reset_link()
+    stub_http_request(:post, "https://toopher.test/v1/pairings/1/generate_reset_link").
+      to_return(
+        :body => {
+          :url => 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde'
+        }.to_json,
+        :status => 200
+      )
+
+    reset_link = @toopher.get_pairing_reset_link('1')
+    assert(reset_link == 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde')
+  end
+
+  def test_email_pairing_reset_link_to_user()
+    stub_http_request(:post, 'https://toopher.test/v1/pairings/1/send_reset_link').
+      with(
+        :body => {
+          :reset_email => 'email'
+        }
+      ).
+      to_return(
+        :body => '[]',
+        :status => 201
+      )
+    result = @toopher.email_pairing_reset_link_to_user('1', 'email')
+    assert(result == true, 'http request returns error status')
+  end
+
+  def test_get()
+    stub_http_request(:get, 'https://toopher.test/v1/pairings/' + @pairing[:id]).
+      to_return(
+        :body => @pairing.to_json,
+        :status => 200
+      )
+
+    result = @toopher.get('pairings/' + @pairing[:id])
+    assert(result['id'] == @pairing[:id], 'wrong pairing id')
+    assert(result['enabled'] == @pairing[:enabled], 'pairing should be enabled')
+    assert(result['pending'] == @pairing[:pending], 'pairing should not be pending')
+    assert(result['user']['id'] == @pairing[:user][:id], 'wrong user id')
+    assert(result['user']['name'] == @pairing[:user][:name], 'wrong user name')
+  end
+
+  def test_post()
+    stub_http_request(:post, 'https://toopher.test/v1/user_terminals/create').
+      with(
+        :body => {
+          :name => @terminal[:name],
+          :name_extra => @terminal[:name_extra],
+          :user_name => @terminal[:user][:name]
+        }
+      ).
+      to_return(
+        :body => @terminal.to_json,
+        :status => 200
+      )
+
+    result = @toopher.post('user_terminals/create', :name => @terminal[:name], :name_extra => @terminal[:name_extra], :user_name => @terminal[:user][:name])
+    assert(result['id'] == @terminal[:id], 'wrong terminal id')
+    assert(result['name'] == @terminal[:name], 'wrong terminal name')
+    assert(result['name_extra'] == @terminal[:name_extra], 'wrong terminal name extra')
+    assert(result['user']['id'] == @terminal[:user][:id], 'wrong user id')
+    assert(result['user']['name'] == @terminal[:user][:name], 'wrong user name')
+  end
+
+  def test_toopher_request_error()
+    stub_http_request(:get, "https://toopher.test/v1/authentication_requests/1").
+      to_return(
+        :body => {
+          :error_code => 401,
+          :error_message => 'Not a valid OAuth signed request'
+        }.to_json,
+        :status => 401
+      )
+    assert_raise ToopherApiError do
+      auth = @toopher.get_authentication_request_by_id('1')
+    end
+  end
+
+  def test_disabled_user_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => {
+          :error_code => 704,
+          :error_message => 'disabled user'
+        }.to_json,
+        :status => 409
+      )
+    assert_raise UserDisabledError do
+      auth_request = @toopher.authenticate('disabled user', 'terminal name')
+    end
+  end
+
+  def test_unknown_user_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => {
+          :error_code => 705,
+          :error_message => 'disabled user'
+        }.to_json,
+        :status => 409
+      )
+    assert_raise UnknownUserError do
+      auth_request = @toopher.authenticate('unknown user', 'terminal name')
+    end
+  end
+
+  def test_unknown_terminal_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => {
+          :error_code => 706,
+          :error_message => 'unknown terminal'
+        }.to_json,
+        :status => 409
+      )
+    assert_raise UnknownTerminalError do
+      auth_request = @toopher.authenticate('user', 'unknown terminal name')
+    end
+  end
+
+  def test_disabled_pairing_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => {
+          :error_code => 601,
+          :error_message => 'pairing has been deactivated'
+        }.to_json,
+        :status => 601
+      )
+    assert_raise PairingDeactivatedError do
+      auth_request = @toopher.authenticate('user', 'terminal name')
+    end
+  end
+
+  def test_unauthorized_pairing_raises_correct_error()
+    stub_http_request(:post, "https://toopher.test/v1/authentication_requests/initiate").
+      to_return(
+        :body => {
+          :error_code => 601,
+          :error_message => 'pairing has not been authorized'
+        }.to_json,
+        :status => 601
+      )
+    assert_raise PairingDeactivatedError do
+      auth_request = @toopher.authenticate('user', 'terminal name')
     end
   end
 
