@@ -30,7 +30,8 @@ class TestToopher < Test::Unit::TestCase
       :granted => true,
       :automated => true,
       :reason => 'some reason',
-      :terminal => @terminal
+      :terminal => @terminal,
+      :user => @user
     }
   end
 
@@ -744,7 +745,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       'granted' => true,
       'automated' => true,
       'reason' => 'some reason',
-      'terminal' => @terminal
+      'terminal' => @terminal,
+      'user' => @user
     }
   end
 
@@ -760,6 +762,9 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
       assert(auth_request.terminal.name == @auth_request['terminal']['name'], 'bad terminal name')
       assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
+      assert(auth_request.user.id == @auth_request['user']['id'], 'bad user id')
+      assert(auth_request.user.name == @auth_request['user']['name'], 'bad user name')
+      assert(auth_request.user.disable_toopher_auth == @auth_request['user']['disable_toopher_auth'], 'bad user disabled status')
     end
   end
 
@@ -779,7 +784,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
             :name => 'term name changed',
             :name_extra => @auth_request['terminal']['name_extra'],
             :user => @auth_request['terminal']['user']
-          }
+          },
+          :user => @auth_request['terminal']['user']
         }.to_json,
         :status => 200
       )
@@ -814,7 +820,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
             :name => 'term name',
             :name_extra => 'requester terminal id',
             :user => @auth_request['terminal']['user']
-          }
+          },
+          :user => @auth_request['terminal']['user']
         }.to_json,
         :status => 200
       )

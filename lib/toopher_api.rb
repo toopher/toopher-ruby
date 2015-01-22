@@ -355,12 +355,17 @@ class AuthenticationRequest
   #   @return  [Terminal] Contains information about the Terminal associated with this AuthenticationRequest
   attr_accessor :terminal
 
+  # @!attribute user
+  #   @return  [User] Contains information about the User associated with this AuthenticationRequest
+  attr_accessor :user
+
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
   def initialize(json_obj)
     @terminal = UserTerminal.new(json_obj['terminal'])
+    @user = User.new(json_obj['user'])
     update(json_obj)
   end
 
@@ -384,6 +389,7 @@ class AuthenticationRequest
     @automated = json_obj['automated']
     @reason = json_obj['reason']
     @terminal.update(json_obj['terminal'])
+    @user.update(json_obj['user'])
     @raw = json_obj
   end
 end
