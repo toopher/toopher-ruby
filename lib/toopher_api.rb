@@ -401,19 +401,16 @@ class UserTerminal
   #   @return [String] A string to help differentiate identically named terminals.
   attr_accessor :name_extra
 
-  # @!attribute user_id
-  #   @return [String] A unique identifier generated and returned by the Toopher web service for a given user.
-  attr_accessor :user_id
-
-  # @!attribute user_name
-  #   @return [String] The human recognizable user name associated with the given id.
-  attr_accessor :user_name
+  # @!attribute user
+  #   @return [User] Contains information about the User associated with this UserTerminal
+  attr_accessor :user
 
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
   def initialize(json_obj)
+    @user = User.new(json_obj['user'])
     update(json_obj)
   end
 
@@ -426,8 +423,7 @@ class UserTerminal
     @id = json_obj['id']
     @name = json_obj['name']
     @name_extra = json_obj['name_extra']
-    @user_id = json_obj['user']['id']
-    @user_name = json_obj['user']['name']
+    @user.update(json_obj['user'])
     @raw = json_obj
   end
 end

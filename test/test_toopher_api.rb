@@ -39,8 +39,8 @@ class TestToopher < Test::Unit::TestCase
     assert(actual_terminal.id == @terminal[:id], 'wrong terminal id')
     assert(actual_terminal.name == @terminal[:name], 'wrong terminal name')
     assert(actual_terminal.name_extra == @terminal[:name_extra], 'wrong terminal name extra')
-    assert(actual_terminal.user_name == @terminal[:user][:name], 'wrong user name')
-    assert(actual_terminal.user_id == @terminal[:user][:id], 'wrong user id')
+    assert(actual_terminal.user.name == @terminal[:user][:name], 'wrong user name')
+    assert(actual_terminal.user.id == @terminal[:user][:id], 'wrong user id')
     assert(actual_terminal.raw['user']['name'] == @terminal[:user][:name], 'could not access raw data')
   end
 
@@ -823,58 +823,57 @@ class TestAuthenticationRequest < Test::Unit::TestCase
 end
 
 class TestUserTerminal < Test::Unit::TestCase
+  def setup
+    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @user = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'user',
+      'disable_toopher_auth' => false
+    }
+    @terminal = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'term name',
+      'name_extra' => 'requester terminal id',
+      'user' => @user
+    }
+  end
+
   def test_constructor()
     assert_nothing_raised do
-      terminal = UserTerminal.new(
-        'id' => '1',
-        'name' => 'term name',
-        'name_extra' => 'requester terminal id',
-        'user' => {
-          'id' => '1',
-          'name' => 'user name'
-        }
-      )
+      terminal = UserTerminal.new(@terminal)
 
-      assert(terminal.id == '1', 'bad terminal id')
-      assert(terminal.name == 'term name', 'bad terminal name')
-      assert(terminal.name_extra == 'requester terminal id', 'bad terminal name extra')
-      assert(terminal.user_id == '1', 'bad user id')
-      assert(terminal.user_name == 'user name', 'bad user name')
+      assert(terminal.id == @terminal['id'], 'bad terminal id')
+      assert(terminal.name == @terminal['name'], 'bad terminal name')
+      assert(terminal.name_extra == @terminal['name_extra'], 'bad terminal name extra')
+      assert(terminal.user.id == @terminal['user']['id'], 'bad user id')
+      assert(terminal.user.name == @terminal['user']['name'], 'bad user name')
     end
   end
 
   def test_refresh_from_server()
-    terminal = UserTerminal.new(
-      'id' => '1',
-      'name' => 'term name',
-      'name_extra' => 'requester terminal id',
-      'user' => {
-        'id' => '1',
-        'name' => 'user name'
-      }
-    )
+    terminal = UserTerminal.new(@terminal)
 
-    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/1').
+    stub_http_request(:get, 'https://toopher.test/v1/user_terminals/' + @terminal['id']).
       to_return(
         :body => {
-          :id => '1',
+          :id => @terminal['id'],
           :name => 'term name changed',
           :name_extra => 'requester terminal id',
           :user => {
-            :id => '1',
-            :name => 'user name changed'
+            :id => @terminal['user']['id'],
+            :name => 'user name changed',
+            :disable_toopher_auth => false
           }
         }.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    terminal.refresh_from_server(toopher)
-    assert(terminal.id == '1', 'bad terminal id')
+    terminal.refresh_from_server(@toopher)
+    assert(terminal.id == @terminal['id'], 'bad terminal id')
     assert(terminal.name == 'term name changed', 'bad terminal name')
     assert(terminal.name_extra == 'requester terminal id', 'bad terminal name extra')
-    assert(terminal.user_id == '1', 'bad user id')
-    assert(terminal.user_name == 'user name changed', 'bad user name')
+    assert(terminal.user.id == @terminal['user']['id'], 'bad user id')
+    assert(terminal.user.name == 'user name changed', 'bad user name')
   end
 end
 
