@@ -351,23 +351,16 @@ class AuthenticationRequest
   #   @return  [String]A string which provides additional information about the reason for the authentication outcome (if available).
   attr_accessor :reason
 
-  # @!attribute terminal_id
-  #   @return  [String]A unique string identifier generated and returned by the Toopher web service for a given terminal.
-  attr_accessor :terminal_id
-
-  # @!attribute terminal_name
-  #   @return [String] The human recognizable terminal name associated with the given id.
-  attr_accessor :terminal_name
-
-  # @!attribute terminal_name_extra
-  #   @return [String] A string to help differentiate identically named terminals.
-  attr_accessor :terminal_name_extra
+  # @!attribute terminal
+  #   @return  [Terminal] Contains information about the Terminal associated with this AuthenticationRequest
+  attr_accessor :terminal
 
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
   def initialize(json_obj)
+    @terminal = UserTerminal.new(json_obj['terminal'])
     update(json_obj)
   end
 
@@ -390,9 +383,7 @@ class AuthenticationRequest
     @granted = json_obj['granted']
     @automated = json_obj['automated']
     @reason = json_obj['reason']
-    @terminal_id = json_obj['terminal']['id']
-    @terminal_name = json_obj['terminal']['name']
-    @terminal_name_extra = json_obj['terminal']['name_extra']
+    @terminal.update(json_obj['terminal'])
     @raw = json_obj
   end
 end

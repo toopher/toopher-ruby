@@ -58,9 +58,9 @@ class TestToopher < Test::Unit::TestCase
     assert(actual_auth_request.granted == @auth_request[:granted], 'bad auth granted')
     assert(actual_auth_request.automated == @auth_request[:automated], 'bad auth automated')
     assert(actual_auth_request.reason == @auth_request[:reason], 'bad auth reason')
-    assert(actual_auth_request.terminal_id == @auth_request[:terminal][:id], 'bad auth terminal id')
-    assert(actual_auth_request.terminal_name == @auth_request[:terminal][:name], 'bad auth terminal name')
-    assert(actual_auth_request.terminal_name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
+    assert(actual_auth_request.terminal.id == @auth_request[:terminal][:id], 'bad auth terminal id')
+    assert(actual_auth_request.terminal.name == @auth_request[:terminal][:name], 'bad auth terminal name')
+    assert(actual_auth_request.terminal.name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
     assert(actual_auth_request.raw['terminal']['name_extra'] == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
   end
 
@@ -725,119 +725,109 @@ class TestPairing < Test::Unit::TestCase
 end
 
 class TestAuthenticationRequest < Test::Unit::TestCase
+  def setup
+    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @user = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'user',
+      'disable_toopher_auth' => false
+    }
+    @terminal = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'term name',
+      'name_extra' => 'requester terminal id',
+      'user' => @user
+    }
+    @auth_request = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'pending' => false,
+      'granted' => true,
+      'automated' => true,
+      'reason' => 'some reason',
+      'terminal' => @terminal
+    }
+  end
+
   def test_constructor()
     assert_nothing_raised do
-      auth_request = AuthenticationRequest.new(
-        'id' => '1',
-        'pending' => true,
-        'granted' => false,
-        'automated' => false,
-        'reason' => 'it is a test',
-        'terminal' => {
-          'id' => '1',
-          'name' => 'term name',
-          'name_extra' => 'requester terminal id'
-        }
-      )
+      auth_request = AuthenticationRequest.new(@auth_request)
 
-       assert(auth_request.id == '1', 'bad auth request id')
-       assert(auth_request.pending == true, 'auth_request should be pending')
-       assert(auth_request.granted == false, 'auth_request should not be granted')
-       assert(auth_request.automated == false, 'auth_request should not be automated')
-       assert(auth_request.reason == 'it is a test', 'bad auth_request reason')
-       assert(auth_request.terminal_id == '1', 'bad terminal id')
-       assert(auth_request.terminal_name == 'term name', 'bad terminal name')
-       assert(auth_request.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
+      assert(auth_request.id == @auth_request['id'], 'bad auth request id')
+      assert(auth_request.pending == @auth_request['pending'], 'bad auth_request pending status')
+      assert(auth_request.granted == @auth_request['granted'], 'bad auth_request granted status')
+      assert(auth_request.automated == @auth_request['automated'], 'bad auth_request automated status')
+      assert(auth_request.reason == @auth_request['reason'], 'bad auth_request reason')
+      assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
+      assert(auth_request.terminal.name == @auth_request['terminal']['name'], 'bad terminal name')
+      assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
     end
   end
 
   def test_refresh_from_server()
-    auth_request = AuthenticationRequest.new(
-      'id' => '1',
-      'pending' => true,
-      'granted' => false,
-      'automated' => false,
-      'reason' => 'it is a test',
-      'terminal' => {
-        'id' => '1',
-        'name' => 'term name',
-        'name_extra' => 'requester terminal id'
-      }
-    )
+    auth_request = AuthenticationRequest.new(@auth_request)
 
-    stub_http_request(:get, 'https://toopher.test/v1/authentication_requests/1').
+    stub_http_request(:get, 'https://toopher.test/v1/authentication_requests/' + @auth_request['id']).
       to_return(
         :body => {
-          :id => '1',
+          :id => @auth_request['id'],
           :pending => false,
           :granted => true,
           :automated => true,
-          :reason => 'it is a test',
+          :reason => 'reason has changed',
           :terminal => {
-            :id => '1',
+            :id => @auth_request['terminal']['id'],
             :name => 'term name changed',
-            :name_extra => 'requester terminal id'
+            :name_extra => @auth_request['terminal']['name_extra'],
+            :user => @auth_request['terminal']['user']
           }
         }.to_json,
         :status => 200
       )
-
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request.refresh_from_server(toopher)
-    assert(auth_request.id == '1', 'bad auth request id')
+    puts
+    auth_request.refresh_from_server(@toopher)
+    assert(auth_request.id == @auth_request['id'], 'bad auth request id')
     assert(auth_request.pending == false, 'auth request should not be pending')
     assert(auth_request.granted == true, 'auth request should be granted')
     assert(auth_request.automated == true, 'auth request should be automated')
-    assert(auth_request.reason == 'it is a test', 'bad auth request reason')
-    assert(auth_request.terminal_id == '1', 'bad terminal id')
-    assert(auth_request.terminal_name == 'term name changed', 'bad terminal name')
-    assert(auth_request.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
+    assert(auth_request.reason == 'reason has changed', 'bad auth request reason')
+    assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
+    assert(auth_request.terminal.name == 'term name changed', 'bad terminal name')
+    assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
   end
 
   def test_authenticate_with_otp()
-    auth_request = AuthenticationRequest.new(
-      'id' => '1',
-      'pending' => true,
-      'granted' => false,
-      'automated' => false,
-      'reason' => 'it is a test',
-      'terminal' => {
-        'id' => '1',
-        'name' => 'term name',
-        'name_extra' => 'requester terminal id'
-      }
-    )
+    auth_request = AuthenticationRequest.new(@auth_request)
 
-    stub_http_request(:post, 'https://toopher.test/v1/authentication_requests/1/otp_auth').
+    stub_http_request(:post, 'https://toopher.test/v1/authentication_requests/' + @auth_request['id'] + '/otp_auth').
       with(
         :body => { :otp => 'otp' }
       ).
       to_return(
         :body => {
-          :id => '1',
+          :id => @auth_request['id'],
           :pending => false,
           :granted => true,
           :automated => true,
           :reason => 'it is a test',
           :terminal => {
-            :id => '1',
+            :id => @auth_request['terminal']['id'],
             :name => 'term name',
-            :name_extra => 'requester terminal id'
+            :name_extra => 'requester terminal id',
+            :user => @auth_request['terminal']['user']
           }
         }.to_json,
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-    auth_request_updated = auth_request.authenticate_with_otp('otp', toopher)
-    assert(auth_request_updated.id == '1', 'bad auth request id')
+    auth_request_updated = auth_request.authenticate_with_otp('otp', @toopher)
+    assert(auth_request_updated.id == @auth_request['id'], 'bad auth request id')
     assert(auth_request_updated.pending == false, 'auth request should not be pending')
     assert(auth_request_updated.granted == true, 'auth request should be granted')
     assert(auth_request_updated.automated == true, 'auth request should be automated')
     assert(auth_request_updated.reason == 'it is a test', 'bad auth request reason')
-    assert(auth_request_updated.terminal_id == '1', 'bad terminal id')
-    assert(auth_request_updated.terminal_name == 'term name', 'bad terminal name')
-    assert(auth_request_updated.terminal_name_extra == 'requester terminal id', 'bad terminal name extra')
+    assert(auth_request_updated.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
+    assert(auth_request_updated.terminal.name == 'term name', 'bad terminal name')
+    assert(auth_request_updated.terminal.name_extra == 'requester terminal id', 'bad terminal name extra')
   end
 end
 
