@@ -116,13 +116,6 @@ class ToopherAPI
     return AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
   end
 
-  # Check on the status of a previous authentication request
-  #
-  # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
-  def get_authentication_request_by_id(authentication_request_id)
-    return AuthenticationRequest.new(@advanced.raw.get('authentication_requests/' + authentication_request_id))
-  end
-
   def create_user_terminal(username, terminal_name, requester_terminal_id, **kwargs)
     params = {
       :user_name => username,
@@ -180,6 +173,10 @@ class AdvancedApiUsageFactory
   #   @return [Pairings] Holds Pairings methods.
   attr_accessor :pairings
 
+  # @!attribute authentication_requests
+  #   @return [AuthenticationRequests] Holds AuthenticationRequests methods.
+  attr_accessor :authentication_requests
+
   # Creates an AdvancedApiUsageFactory for Toopher API advanced methods
   #
   # @param [String] key Your Toopher API Key
@@ -189,6 +186,7 @@ class AdvancedApiUsageFactory
   def initialize(key, secret, options, base_url)
     @raw = ApiRawRequester.new(key, secret, options, base_url)
     @pairings = Pairings.new(@raw)
+    @authentication_requests = AuthenticationRequests.new(@raw)
   end
 end
 
@@ -332,6 +330,20 @@ class Pairing
     @pending = json_obj['pending']
     @user.update(json_obj['user'])
     @raw = json_obj
+  end
+end
+
+# Contains advanced ToopherAPI methods associated with authentication requests
+class AuthenticationRequests
+  def initialize(raw)
+    @raw = raw
+  end
+
+  # Check on the status of a previous authentication request
+  #
+  # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
+  def get_by_id(authentication_request_id)
+    return AuthenticationRequest.new(@raw.get('authentication_requests/' + authentication_request_id))
   end
 end
 

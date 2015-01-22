@@ -272,7 +272,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    auth_request = @toopher.get_authentication_request_by_id(@auth_request[:id])
+    auth_request = @toopher.advanced.authentication_requests.get_by_id(@auth_request[:id])
     compare_to_default_auth_request(auth_request)
   end
 
@@ -483,7 +483,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 401
       )
     assert_raise ToopherApiError do
-      auth = @toopher.get_authentication_request_by_id('1')
+      auth = @toopher.advanced.authentication_requests.get_by_id('1')
     end
   end
 
