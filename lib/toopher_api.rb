@@ -314,12 +314,7 @@ class Pairing
   attr_accessor :raw
 
   def initialize(json_obj)
-    @id = json_obj['id']
-    @enabled = json_obj['enabled']
-    @pending = json_obj['pending']
-    @user_id = json_obj['user']['id']
-    @user_name = json_obj['user']['name']
-    @raw = json_obj
+    update(json_obj)
   end
 
   def refresh_from_server(api)
@@ -328,6 +323,15 @@ class Pairing
     @pending = result['pending']
     @user_name = result['user']['name']
     @raw = result
+  end
+
+  def update(json_obj)
+    @id = json_obj['id']
+    @enabled = json_obj['enabled']
+    @pending = json_obj['pending']
+    @user_id = json_obj['user']['id']
+    @user_name = json_obj['user']['name']
+    @raw = json_obj
   end
 end
 
@@ -371,6 +375,23 @@ class AuthenticationRequest
   attr_accessor :raw
 
   def initialize(json_obj)
+    update(json_obj)
+  end
+
+  def refresh_from_server(api)
+    result = api.advanced.raw.get('authentication_requests/' + @id)
+    update(result)
+  end
+
+  def authenticate_with_otp(otp, api, **kwargs)
+    url = 'authentication_requests/' + @id + '/otp_auth'
+    params = { :otp => otp }
+    params.merge!(kwargs)
+    result = api.advanced.raw.post(url, params)
+    return AuthenticationRequest.new(result)
+  end
+
+  def update(json_obj)
     @id = json_obj['id']
     @pending = json_obj['pending']
     @granted = json_obj['granted']
@@ -380,25 +401,6 @@ class AuthenticationRequest
     @terminal_name = json_obj['terminal']['name']
     @terminal_name_extra = json_obj['terminal']['name_extra']
     @raw = json_obj
-  end
-
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('authentication_requests/' + @id)
-    @pending = result['pending']
-    @granted = result['granted']
-    @automated = result['automated']
-    @reason = result['reason']
-    @terminal_name = result['terminal']['name']
-    @terminal_name_extra = result['terminal']['name_extra']
-    @raw = result
-  end
-
-  def authenticate_with_otp(otp, api, **kwargs)
-    url = 'authentication_requests/' + @id + '/otp_auth'
-    params = { :otp => otp }
-    params.merge!(kwargs)
-    result = api.advanced.raw.post(url, params)
-    return AuthenticationRequest.new(result)
   end
 end
 
@@ -428,20 +430,21 @@ class UserTerminal
   attr_accessor :raw
 
   def initialize(json_obj)
+    update(json_obj)
+  end
+
+  def refresh_from_server(api)
+    result = api.advanced.raw.get('user_terminals/' + @id)
+    update(result)
+  end
+
+  def update(json_obj)
     @id = json_obj['id']
     @name = json_obj['name']
     @name_extra = json_obj['name_extra']
     @user_id = json_obj['user']['id']
     @user_name = json_obj['user']['name']
     @raw = json_obj
-  end
-
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('user_terminals/' + @id)
-    @name = result['name']
-    @name_extra = result['name_extra']
-    @user_name = result['user']['name']
-    @raw = result
   end
 end
 
@@ -463,17 +466,12 @@ class User
   attr_accessor :raw
 
   def initialize(json_obj)
-    @id = json_obj['id']
-    @name = json_obj['name']
-    @disable_toopher_auth = json_obj['disable_toopher_auth']
-    @raw = json_obj
+    update(json_obj)
   end
 
   def refresh_from_server(api)
     result = api.advanced.raw.get('users/' + @id)
-    @name = result['name']
-    @disable_toopher_auth = result['disable_toopher_auth']
-    @raw = result
+    update(result)
   end
 
   def enable(api)
@@ -492,5 +490,12 @@ class User
 
   def reset(api)
     return api.reset_user(@name)
+  end
+
+  def update(json_obj)
+    @id = json_obj['id']
+    @name = json_obj['name']
+    @disable_toopher_auth = json_obj['disable_toopher_auth']
+    @raw = json_obj
   end
 end
