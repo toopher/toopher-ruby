@@ -232,7 +232,7 @@ class TestToopher < Test::Unit::TestCase
         :body => {
           :pairing_id => @auth_request[:id],
           :terminal_name => @terminal[:name],
-          :test_param => 'foo' 
+          :test_param => 'foo'
         }
       ).
       to_return(
@@ -483,7 +483,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    result = @toopher.get('pairings/' + @pairing[:id])
+    result = @toopher.advanced.raw.get('pairings/' + @pairing[:id])
     assert(result['id'] == @pairing[:id], 'wrong pairing id')
     assert(result['enabled'] == @pairing[:enabled], 'pairing should be enabled')
     assert(result['pending'] == @pairing[:pending], 'pairing should not be pending')
@@ -505,7 +505,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    result = @toopher.post('user_terminals/create', :name => @terminal[:name], :name_extra => @terminal[:name_extra], :user_name => @terminal[:user][:name])
+    result = @toopher.advanced.raw.post('user_terminals/create', :name => @terminal[:name], :name_extra => @terminal[:name_extra], :user_name => @terminal[:user][:name])
     assert(result['id'] == @terminal[:id], 'wrong terminal id')
     assert(result['name'] == @terminal[:name], 'wrong terminal name')
     assert(result['name_extra'] == @terminal[:name_extra], 'wrong terminal name extra')
