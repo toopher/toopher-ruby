@@ -126,10 +126,6 @@ class ToopherAPI
     return UserTerminal.new(@advanced.raw.post('user_terminals/create', params))
   end
 
-  def get_user_terminal_by_id(terminal_id)
-    return UserTerminal.new(@advanced.raw.get('user_terminals/' + terminal_id))
-  end
-
   def enable_user(username)
     set_toopher_disabled_for_user(username, false)
   end
@@ -171,6 +167,10 @@ class AdvancedApiUsageFactory
   #   @return [Users] Holds Users methods.
   attr_accessor :users
 
+  # @!attribute user_terminals
+  #   @return [Users] Holds user terminals methods.
+  attr_accessor :user_terminals
+
   # Creates an AdvancedApiUsageFactory for Toopher API advanced methods
   #
   # @param [String] key Your Toopher API Key
@@ -182,6 +182,7 @@ class AdvancedApiUsageFactory
     @pairings = Pairings.new(@raw)
     @authentication_requests = AuthenticationRequests.new(@raw)
     @users = Users.new(@raw)
+    @user_terminals = UserTerminals.new(@raw)
   end
 end
 
@@ -408,6 +409,22 @@ class AuthenticationRequest
   end
 end
 
+# Contains advanced ToopherAPI methods associated with user terminals
+class UserTerminals
+  def initialize(raw)
+    @raw = raw
+  end
+
+  # Check on the status of a user terminal
+  #
+  # @param [String] terminal_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal.
+  def get_by_id(terminal_id)
+    return UserTerminal.new(@raw.get('user_terminals/' + terminal_id))
+  end
+
+end
+
+# Contains information about a particular user terminal
 class UserTerminal
   # @!attribute id
   #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal. It can be used to request status information for the user terminal.
@@ -471,6 +488,7 @@ class Users
   end
 end
 
+# Contains information about a particular User
 class User
   # @!attribute id
   #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this user. It can be used to request status information for the user.

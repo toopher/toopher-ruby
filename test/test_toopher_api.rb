@@ -301,7 +301,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    terminal = @toopher.get_user_terminal_by_id(@terminal[:id])
+    terminal = @toopher.advanced.user_terminals.get_by_id(@terminal[:id])
     compare_to_default_terminal(terminal)
   end
 
