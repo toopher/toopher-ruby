@@ -115,28 +115,6 @@ class ToopherAPI
 
     return AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
   end
-
-  def enable_user(username)
-    set_toopher_disabled_for_user(username, false)
-  end
-
-  def disable_user(username)
-    set_toopher_disabled_for_user(username, true)
-  end
-
-  private
-  def set_toopher_disabled_for_user(username, disable)
-    params = { :name => username }
-    users = @advanced.raw.get('users', params)
-    if users.count > 1
-      raise ToopherApiError, 'Multiple users with name = #{username}'
-    elsif users.count == 0
-      raise ToopherApiError, 'No users with name = #{username}'
-    end
-    url = 'users/' + users[0]['id']
-    params = { :disable_toopher_auth => disable }
-    result = @advanced.raw.post(url, params)
-  end
 end
 
 # Contains advanced API methods
