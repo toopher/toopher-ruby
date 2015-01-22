@@ -451,34 +451,6 @@ class TestToopher < Test::Unit::TestCase
     assert(result == true)
   end
 
-  def test_get_pairing_reset_link()
-    stub_http_request(:post, "https://toopher.test/v1/pairings/1/generate_reset_link").
-      to_return(
-        :body => {
-          :url => 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde'
-        }.to_json,
-        :status => 200
-      )
-
-    reset_link = @toopher.get_pairing_reset_link('1')
-    assert(reset_link == 'http://toopher.test/v1/pairings/1/reset?reset_authorization=abcde')
-  end
-
-  def test_email_pairing_reset_link_to_user()
-    stub_http_request(:post, 'https://toopher.test/v1/pairings/1/send_reset_link').
-      with(
-        :body => {
-          :reset_email => 'email'
-        }
-      ).
-      to_return(
-        :body => '[]',
-        :status => 201
-      )
-    result = @toopher.email_pairing_reset_link_to_user('1', 'email')
-    assert(result == true, 'http request returns error status')
-  end
-
   def test_get()
     stub_http_request(:get, 'https://toopher.test/v1/pairings/' + @pairing[:id]).
       to_return(
@@ -616,24 +588,30 @@ class TestToopher < Test::Unit::TestCase
 end
 
 class TestPairing < Test::Unit::TestCase
+  def setup
+    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @user = {
+        'id' => UUIDTools::UUID.random_create().to_str(),
+        'name' => 'user',
+        'disable_toopher_auth' => false
+    }
+    @pairing = {
+        'id' => UUIDTools::UUID.random_create().to_str(),
+        'enabled' => true,
+        'pending' => false,
+        'user' => @user
+    }
+  end
+
   def test_constructor()
     assert_nothing_raised do
-      pairing = Pairing.new(
-        'id' => '1',
-        'enabled' => false,
-        'pending' => true,
-        'user' => {
-          'id' => '1',
-          'name' => 'user name',
-          'disable_toopher_auth' => false
-        }
-      )
+      pairing = Pairing.new(@pairing)
 
-      assert(pairing.id == '1', 'bad pairing id')
-      assert(pairing.enabled == false, 'pairing should not be enabled')
-      assert(pairing.pending == true, 'pairing should be pending')
-      assert(pairing.user.id == '1', 'bad user id')
-      assert(pairing.user.name == 'user name', 'bad user name')
+      assert(pairing.id == @pairing['id'], 'bad pairing id')
+      assert(pairing.enabled == @pairing['enabled'], 'pairing should not be enabled')
+      assert(pairing.pending == @pairing['pending'], 'pairing should be pending')
+      assert(pairing.user.id == @pairing['user']['id'], 'bad user id')
+      assert(pairing.user.name == @pairing['user']['name'], 'bad user name')
     end
   end
 
@@ -670,20 +648,61 @@ class TestPairing < Test::Unit::TestCase
         :status => 200
       )
 
-      toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
-      pairing1.refresh_from_server(toopher)
-      assert(pairing1.id == '1', 'bad pairing id')
-      assert(pairing1.enabled == true, 'pairing not enabled')
-      assert(pairing1.pending == false, 'pairing is pending')
-      assert(pairing1.user.id == '1', 'bad user id')
-      assert(pairing1.user.name == 'paired user changed name', 'bad user name')
+    pairing1.refresh_from_server(@toopher)
+    assert(pairing1.id == '1', 'bad pairing id')
+    assert(pairing1.enabled == true, 'pairing not enabled')
+    assert(pairing1.pending == false, 'pairing is pending')
+    assert(pairing1.user.id == '1', 'bad user id')
+    assert(pairing1.user.name == 'paired user changed name', 'bad user name')
 
-      pairing2.refresh_from_server(toopher)
-      assert(pairing2.id == '2', 'bad pairing id')
-      assert(pairing2.enabled == false, 'pairing should not be enabled')
-      assert(pairing2.pending == false, 'pairing is pending')
-      assert(pairing2.user.id == '2', 'bad user id')
-      assert(pairing2.user.name == 'unpaired user changed name', 'bad user name')
+    pairing2.refresh_from_server(@toopher)
+    assert(pairing2.id == '2', 'bad pairing id')
+    assert(pairing2.enabled == false, 'pairing should not be enabled')
+    assert(pairing2.pending == false, 'pairing is pending')
+    assert(pairing2.user.id == '2', 'bad user id')
+    assert(pairing2.user.name == 'unpaired user changed name', 'bad user name')
+  end
+
+  def test_get_reset_link()
+    stub_http_request(:get, 'https://toopher.test/v1/pairings/' + @pairing['id']).
+      to_return(
+        :body => @pairing.to_json,
+        :status => 200
+      )
+
+    stub_http_request(:post,'https://toopher.test/v1/pairings/' + @pairing['id'] + '/generate_reset_link').
+      to_return(
+        :body => {
+          :url => 'http://toopher.test/v1/pairings/' + @pairing['id'] + '/reset?reset_authorization=abcde'
+        }.to_json,
+        :status => 200
+      )
+    pairing = @toopher.get_pairing_by_id(@pairing['id'])
+    reset_link = pairing.get_reset_link(@toopher)
+    assert(reset_link == 'http://toopher.test/v1/pairings/' + @pairing['id'] + '/reset?reset_authorization=abcde')
+  end
+
+  def test_email_reset_link_to_user()
+    stub_http_request(:get, 'https://toopher.test/v1/pairings/' + @pairing['id']).
+      to_return(
+        :body => @pairing.to_json,
+        :status => 200
+      )
+
+    stub_http_request(:post, 'https://toopher.test/v1/pairings/' + @pairing['id'] + '/send_reset_link').
+      with(
+        :body => {
+          :reset_email => 'email'
+        }
+      ).
+      to_return(
+        :body => '[]',
+        :status => 201
+      )
+    pairing = @toopher.get_pairing_by_id(@pairing['id'])
+    assert_nothing_raised do
+      pairing.email_reset_link_to_user(@toopher, 'email')
+    end
   end
 end
 

@@ -170,20 +170,6 @@ class ToopherAPI
     return true # would raise error in parse_request_error() if failed
   end
 
-  def get_pairing_reset_link(pairing_id, **kwargs)
-    url = 'pairings/' + pairing_id + '/generate_reset_link'
-    result = @advanced.raw.post(url, kwargs)
-    return result['url']
-  end
-
-  def email_pairing_reset_link_to_user(pairing_id, email, **kwargs)
-    url = 'pairings/' + pairing_id + '/send_reset_link'
-    params = { :reset_email => email }
-    params.merge!(kwargs)
-    @advanced.raw.post(url, params)
-    return true # would raise error in parse_request_error() if failed
-  end
-
   private
   def set_toopher_disabled_for_user(username, disable)
     params = { :name => username }
@@ -317,6 +303,20 @@ class Pairing
   def refresh_from_server(api)
     result = api.advanced.raw.get('pairings/' + @id)
     update(result)
+  end
+
+  def get_reset_link(api, **kwargs)
+    url = 'pairings/' + @id + '/generate_reset_link'
+    result = api.advanced.raw.post(url, kwargs)
+    return result['url']
+  end
+
+  def email_reset_link_to_user(api, email, **kwargs)
+    url = 'pairings/' + @id + '/send_reset_link'
+    params = { :reset_email => email }
+    params.merge!(kwargs)
+    api.advanced.raw.post(url, params)
+    return true # would raise error in parse_request_error() if failed
   end
 
   def update(json_obj)
