@@ -136,10 +136,6 @@ class ToopherAPI
     return User.new(@advanced.raw.post('users/create', params))
   end
 
-  def get_user_by_id(user_id)
-    return User.new(@advanced.raw.get('users/' + user_id))
-  end
-
   def enable_user(username)
     set_toopher_disabled_for_user(username, false)
   end
@@ -177,6 +173,10 @@ class AdvancedApiUsageFactory
   #   @return [AuthenticationRequests] Holds AuthenticationRequests methods.
   attr_accessor :authentication_requests
 
+  # @!attribute users
+  #   @return [Users] Holds Users methods.
+  attr_accessor :users
+
   # Creates an AdvancedApiUsageFactory for Toopher API advanced methods
   #
   # @param [String] key Your Toopher API Key
@@ -187,6 +187,7 @@ class AdvancedApiUsageFactory
     @raw = ApiRawRequester.new(key, secret, options, base_url)
     @pairings = Pairings.new(@raw)
     @authentication_requests = AuthenticationRequests.new(@raw)
+    @users = Users.new(@raw)
   end
 end
 
@@ -450,6 +451,20 @@ class UserTerminal
     @name_extra = json_obj['name_extra']
     @user.update(json_obj['user'])
     @raw = json_obj
+  end
+end
+
+# Contains advanced ToopherAPI methods associated with users
+class Users
+  def initialize(raw)
+    @raw = raw
+  end
+
+  # Check on the status of a user
+  #
+  # @param [String] user_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user.
+  def get_by_id(user_id)
+    return User.new(@raw.get('users/' + user_id))
   end
 end
 

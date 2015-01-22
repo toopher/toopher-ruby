@@ -330,7 +330,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    user = @toopher.get_user_by_id(@user[:id])
+    user = @toopher.advanced.users.get_by_id(@user[:id])
     assert(user.id == @user[:id], 'wrong user id')
     assert(user.name == @user[:name], 'wrong user name')
     assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'wrong user disabled status')
@@ -383,7 +383,7 @@ class TestToopher < Test::Unit::TestCase
         }.to_json,
         :status => 200
       )
-    user = @toopher.get_user_by_id(user.id)
+    user = @toopher.advanced.users.get_by_id(user.id)
     assert(user.id == '1', 'wrong user id')
     assert(user.name == 'user name', 'wrong user name')
     assert(user.disable_toopher_auth == disable, 'user should be enabled')
