@@ -130,12 +130,6 @@ class ToopherAPI
     return UserTerminal.new(@advanced.raw.get('user_terminals/' + terminal_id))
   end
 
-  def create_user(username, **kwargs)
-    params = { :name => username }
-    params.merge!(kwargs)
-    return User.new(@advanced.raw.post('users/create', params))
-  end
-
   def enable_user(username)
     set_toopher_disabled_for_user(username, false)
   end
@@ -465,6 +459,15 @@ class Users
   # @param [String] user_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user.
   def get_by_id(user_id)
     return User.new(@raw.get('users/' + user_id))
+  end
+
+  # Create a new user
+  #
+  # @param [String] username The human recognizable user name.
+  def create(username, **kwargs)
+    params = { :name => username }
+    params.merge!(kwargs)
+    return User.new(@raw.post('users/create', params))
   end
 end
 

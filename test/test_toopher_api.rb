@@ -317,7 +317,7 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-    user = @toopher.create_user(@user[:name])
+    user = @toopher.advanced.users.create(@user[:name])
     assert(user.id == @user[:id], 'wrong user id')
     assert(user.name == @user[:name], 'wrong user name')
     assert(user.disable_toopher_auth == @user[:disable_toopher_auth], 'wrong user disabled status')
