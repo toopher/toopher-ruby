@@ -198,14 +198,14 @@ class TestToopher < Test::Unit::TestCase
         :status => 200
       )
 
-      pairing = @toopher.get_pairing_by_id('1')
+      pairing = @toopher.advanced.pairings.get_by_id('1')
       assert(pairing.id == '1', 'bad pairing id')
       assert(pairing.enabled == true, 'pairing not enabled')
       assert(pairing.pending == false, 'pairing is pending')
       assert(pairing.user.id == '1', 'bad user id')
       assert(pairing.user.name == 'paired user', 'bad user name')
 
-      pairing = @toopher.get_pairing_by_id('2')
+      pairing = @toopher.advanced.pairings.get_by_id('2')
       assert(pairing.id == '2', 'bad pairing id')
       assert(pairing.enabled == false, 'pairing should not be enabled')
       assert(pairing.pending == true, 'pairing is not pending')
@@ -680,7 +680,7 @@ class TestPairing < Test::Unit::TestCase
         }.to_json,
         :status => 200
       )
-    pairing = @toopher.get_pairing_by_id(@pairing['id'])
+    pairing = @toopher.advanced.pairings.get_by_id(@pairing['id'])
     reset_link = pairing.get_reset_link(@toopher)
     assert(reset_link == 'http://toopher.test/v1/pairings/' + @pairing['id'] + '/reset?reset_authorization=abcde')
   end
@@ -702,7 +702,7 @@ class TestPairing < Test::Unit::TestCase
         :body => '[]',
         :status => 201
       )
-    pairing = @toopher.get_pairing_by_id(@pairing['id'])
+    pairing = @toopher.advanced.pairings.get_by_id(@pairing['id'])
     assert_nothing_raised do
       pairing.email_reset_link_to_user(@toopher, 'email')
     end

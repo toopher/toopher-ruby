@@ -89,15 +89,6 @@ class ToopherAPI
     return Pairing.new(@advanced.raw.post(url, params))
   end
 
-  # Check on the status of a previous pairing request
-  #
-  # @param [String] pairing_id The unique string identifier id returned by a previous pairing request.
-  #
-  # @return [Pairing] Information about the pairing request
-  def get_pairing_by_id(pairing_id)
-    return Pairing.new(@advanced.raw.get('pairings/' + pairing_id))
-  end
-
   # Authenticate an action with Toopher
   #
   # @param [String] id_or_username The unique string identifier id returned by a previous pairing request or the username of the pairing's user.
@@ -185,6 +176,10 @@ class AdvancedApiUsageFactory
   #   @return [ApiRawRequester] Holds HTTP Request methods.
   attr_accessor :raw
 
+  # @!attribute pairings
+  #   @return [Pairings] Holds Pairings methods.
+  attr_accessor :pairings
+
   # Creates an AdvancedApiUsageFactory for Toopher API advanced methods
   #
   # @param [String] key Your Toopher API Key
@@ -193,6 +188,7 @@ class AdvancedApiUsageFactory
   # @param [string] base_url The base URL to use for the Toopher API
   def initialize(key, secret, options, base_url)
     @raw = ApiRawRequester.new(key, secret, options, base_url)
+    @pairings = Pairings.new(@raw)
   end
 end
 
@@ -264,6 +260,23 @@ class ApiRawRequester
       end
     end
   end
+end
+
+# Contains advanced ToopherAPI methods associated with Pairings
+class Pairings
+  def initialize(raw)
+    @raw = raw
+  end
+
+  # Check on the status of a previous pairing request
+  #
+  # @param [String] pairing_id The unique string identifier id returned by a previous pairing request.
+  #
+  # @return [Pairing] Information about the pairing request
+  def get_by_id(pairing_id)
+    return Pairing.new(@raw.get('pairings/' + pairing_id))
+  end
+
 end
 
 # Contains information about a particular pairing request
