@@ -436,22 +436,6 @@ class TestToopher < Test::Unit::TestCase
     end
   end
 
-  def test_reset_user()
-    stub_http_request(:post, 'https://toopher.test/v1/users/reset').
-      with(
-        :body => {
-          :name => @user[:name]
-        }
-      ).
-      to_return(
-        :body => '[]',
-        :status => 200
-      )
-
-    result = @toopher.reset_user(@user[:name])
-    assert(result == true)
-  end
-
   def test_get()
     stub_http_request(:get, 'https://toopher.test/v1/pairings/' + @pairing[:id]).
       to_return(

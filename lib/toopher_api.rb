@@ -164,12 +164,6 @@ class ToopherAPI
     set_toopher_disabled_for_user(username, true)
   end
 
-  def reset_user(username)
-    params = { :name => username }
-    @advanced.raw.post('users/reset', params)
-    return true # would raise error in parse_request_error() if failed
-  end
-
   private
   def set_toopher_disabled_for_user(username, disable)
     params = { :name => username }
@@ -479,7 +473,9 @@ class User
   end
 
   def reset(api)
-    return api.reset_user(@name)
+    params = { :name => @name }
+    api.advanced.raw.post('users/reset', params)
+    return true
   end
 
   def update(json_obj)
