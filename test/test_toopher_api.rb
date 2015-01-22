@@ -3,6 +3,7 @@ require 'test/unit'
 require 'webmock/test_unit'
 require 'toopher_api'
 require 'uuidtools'
+require 'fastimage'
 
 class TestToopher < Test::Unit::TestCase
   def setup
@@ -668,6 +669,24 @@ class TestPairing < Test::Unit::TestCase
     pairing = @toopher.advanced.pairings.get_by_id(@pairing['id'])
     assert_nothing_raised do
       pairing.email_reset_link_to_user(@toopher, 'email')
+    end
+  end
+
+  def test_get_qr_code_image()
+    pairing = Pairing.new(@pairing)
+    File.open('qr_image.png', 'rb') do |qr_image|
+      stub_http_request(:get, 'https://toopher.test/v1/qr/pairings/' + @pairing['id']).
+        to_return(
+          :body => qr_image.read(),
+          :status => 200
+        )
+
+      qr_image_data = pairing.get_qr_code_image(@toopher)
+      File.open('new_image.png', 'wb') do |new_image|
+        new_image.write(qr_image_data)
+      end
+      file_type = FastImage.type('new_image.png')
+      assert(file_type == :png)
     end
   end
 end

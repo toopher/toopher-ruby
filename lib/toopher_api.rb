@@ -189,21 +189,26 @@ class ApiRawRequester
     if kwargs.empty?
       req = Net::HTTP::Get.new(url.path)
     else
+      raw = kwargs.delete(:raw)
       req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(kwargs))
     end
-    return request(url, req)
+    return request(url, req, raw)
   end
 
   private
-  def request(url, req)
+  def request(url, req, raw=nil)
     req['User-Agent'] = "Toopher-Ruby/#{VERSION} (Ruby #{RUBY_VERSION})"
     http = Net::HTTP::new(url.host, url.port)
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
     res = http.request(req)
-    decoded = JSON.parse(res.body)
+    decoded = JSON.parse(res.body) if raw.nil? or res.code.to_i >= 400
     parse_request_error(decoded) if res.code.to_i >= 400
-    return decoded
+    if raw.nil?
+      return decoded
+    else
+      return res.body
+    end
   end
 
   def parse_request_error(decoded)
@@ -286,6 +291,11 @@ class Pairing
     params.merge!(kwargs)
     api.advanced.raw.post(url, params)
     return true # would raise error in parse_request_error() if failed
+  end
+
+  def get_qr_code_image(api)
+    url = 'qr/pairings/' + @id
+    return api.advanced.raw.get(url, :raw => true)
   end
 
   def update(json_obj)
