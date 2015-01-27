@@ -55,7 +55,7 @@ class SignatureValidationError< ToopherApiError
 end
 
 class ToopherIframe
-  DEFAULT_IFRAME_TTL = 100
+  DEFAULT_IFRAME_TTL = 300
   IFRAME_VERSION = '2'
 
   def initialize(key, secret, options, base_url = DEFAULT_BASE_URL)
