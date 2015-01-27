@@ -14,6 +14,30 @@ class TestToopherIframe < Test::Unit::TestCase
     Time.stubs(:now).returns(Time.at(1000))
   end
 
+  def test_validate_good_signature_is_successful()
+    data = {
+      :foo => 'bar',
+      :timestamp => '1000',
+      :session_token => @request_token,
+      :toopher_sig => '6d2c7GlQssGmeYYGpcf+V/kirOI='
+    }
+    assert_nothing_raised do
+      @iframe_api.validate_postback(data, @request_token)
+    end
+  end
+
+  def test_arrays_get_flattened_for_validate()
+    data = {
+      :foo => ['bar'],
+      :timestamp => ['1000'],
+      :session_token => [@request_token],
+      :toopher_sig => ['6d2c7GlQssGmeYYGpcf+V/kirOI=']
+    }
+    assert_nothing_raised do
+      @iframe_api.validate_postback(data, @request_token)
+    end
+  end
+
   def test_get_user_management_url()
     expected = 'https://api.toopher.test/v1/web/manage_user?username=jdoe&reset_email=jdoe%40example.com&v=2&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=sV8qoKnxJ3fxfP6AHNa0eNFxzJs%3D'
 

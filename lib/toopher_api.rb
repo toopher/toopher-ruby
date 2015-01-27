@@ -28,6 +28,8 @@ require 'json'
 require 'oauth'
 require 'uuidtools'
 require 'time'
+require 'openssl'
+require 'base64'
 
 # Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
 DEFAULT_BASE_URL = 'https://api.toopher.com/v1/'
@@ -47,6 +49,9 @@ class UnknownTerminalError < ToopherApiError
 end
 
 class PairingDeactivatedError< ToopherApiError
+end
+
+class SignatureValidationError< ToopherApiError
 end
 
 class ToopherIframe
@@ -91,7 +96,47 @@ class ToopherIframe
     return get_oauth_signed_url('web/authenticate', ttl, params)
   end
 
+  def validate_postback(data, request_token='', **kwargs)
+    ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
+
+    # flatten data if necessary
+    if data.values.first.is_a? Enumerable
+      data = Hash[data.map {|k,v| [k, (v.is_a?(Enumerable) ? v.first : v)]}]
+    end
+
+    missing_keys = []
+    [:toopher_sig, :timestamp, :session_token].each do |required_key|
+      missing_keys << required_key if data[required_key].nil?
+    end
+    unless missing_keys.empty?
+      raise SignatureValidationError, "Missing required keys: #{missing_keys}"
+    end
+
+    if !request_token.empty? && request_token != data[:session_token]
+      raise SignatureValidationError, 'Session token does not match expected value!'
+    end
+
+    maybe_sig = data.delete(:toopher_sig)
+    computed_sig = signature(data)
+    if maybe_sig != computed_sig
+      raise SignatureValidationError, "Computed signature does not match submitted signature: #{computed_sig} vs #{maybe_sig}"
+    end
+
+    if Time.now.to_i - data[:timestamp].to_i >= ttl
+      raise SignatureValidationError, 'TTL expired'
+    end
+    return data
+  end
+
   private
+
+  def signature(data)
+    to_sign = URI.encode_www_form(Hash[data.sort]).encode('utf-8')
+    secret = @oauth_consumer.secret.encode('utf-8')
+    digest = OpenSSL::Digest::Digest.new('sha1')
+    hmac = OpenSSL::HMAC.digest(digest, secret, to_sign)
+    return Base64.encode64(hmac).chomp.gsub( /\n/, '' )
+  end
 
   def get_oauth_signed_url(url, ttl, **kwargs)
     bools = kwargs.select { |k,v| v.is_a?(TrueClass) || v.is_a?(FalseClass) }
