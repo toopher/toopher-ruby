@@ -31,14 +31,14 @@ require 'toopher_api'
 toopher = ToopherAPI.new("key", "secret")
 
 # Step 1 - Pair with their phone's Toopher app
-pairing = toopher.pair("pairing phrase", "username@yourservice.com")
+pairing = toopher.pair("username@yourservice.com", "pairing phrase")
 
 # Step 2 - Authenticate a log in
 auth_status = toopher.authenticate(pairing.id, 'my computer')
 
 # Once they've responded you can then check the status
 while auth_status.pending
-    auth_status = toopher.get_authentication_request_by_id(auth_status.id)
+    auth_status.refresh_from_server()
     sleep(1)
 end
 
@@ -92,7 +92,7 @@ rescue UnknownTerminalError
     # This user has not assigned a "Friendly Name" to this terminal identifier.
     # Prompt them to enter a terminal name, then submit that "friendly name" to
     # the Toopher API:
-    #   api.create_user_terminal(user_name, terminal_friendly_name, terminal_identifier)
+    #   api.advanced.user_terminals.create(user_name, terminal_friendly_name, terminal_identifier)
     # Afterwards, re-try authentication
 rescue PairingDeactivatedError
     # this user does not have an active pairing,
