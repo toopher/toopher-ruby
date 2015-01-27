@@ -102,11 +102,11 @@ end
 ```
 
 #### Known Issues / Workarouds
-When running the demo code with ruby 1.9.3, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to [this railsapps page](http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
+When running the demo code with ruby 2.0.0, you might receive an OpenSSL error stating that the certificate verify failed.  This is a known issue with rubygems, refer to [this railsapps page](http://railsapps.github.com/openssl-certificate-verify-failed.html) for a discussion of the problem and an exhaustive list of potential workarounds.  Here's what worked for us (using rvm and homebrew):
 ```shell
-$ rvm remove 1.9.3
+$ rvm remove 2.0.0
 $ brew install openssl
-$ rvm install 1.9.3 --with-openssl-dir=`brew --prefix openssl`
+$ rvm install 2.0.0 --with-openssl-dir=`brew --prefix openssl`
 ```
 
 #### Tests
