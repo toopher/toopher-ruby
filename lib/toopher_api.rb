@@ -147,7 +147,7 @@ class ToopherIframe
 end
 
 # Abstracts calls to the Toopher OAuth webservice
-class ToopherAPI
+class ToopherApi
   # Version of the library
   VERSION = '1.1.0'
 
@@ -290,7 +290,7 @@ class ApiRawRequester
   private
 
   def request(url, req, raw=nil)
-    req['User-Agent'] = "Toopher-Ruby/#{ToopherAPI::VERSION} (Ruby #{RUBY_VERSION})"
+    req['User-Agent'] = "Toopher-Ruby/#{ToopherApi::VERSION} (Ruby #{RUBY_VERSION})"
     http = Net::HTTP::new(url.host, url.port)
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
@@ -318,7 +318,7 @@ class ApiRawRequester
   end
 end
 
-# Contains advanced ToopherAPI methods associated with Pairings
+# Contains advanced ToopherApi methods associated with Pairings
 class Pairings
   def initialize(raw)
     @raw = raw
@@ -398,7 +398,7 @@ class Pairing
   end
 end
 
-# Contains advanced ToopherAPI methods associated with authentication requests
+# Contains advanced ToopherApi methods associated with authentication requests
 class AuthenticationRequests
   def initialize(raw)
     @raw = raw
@@ -508,7 +508,7 @@ class Action
   end
 end
 
-# Contains advanced ToopherAPI methods associated with user terminals
+# Contains advanced ToopherApi methods associated with user terminals
 class UserTerminals
   def initialize(raw)
     @raw = raw
@@ -580,7 +580,7 @@ class UserTerminal
   end
 end
 
-# Contains advanced ToopherAPI methods associated with users
+# Contains advanced ToopherApi methods associated with users
 class Users
   def initialize(raw)
     @raw = raw

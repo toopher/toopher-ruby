@@ -1,9 +1,9 @@
-# ToopherAPI Ruby Client
+# ToopherApi Ruby Client
 
 [![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
 
 #### Introduction
-ToopherAPI Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
+ToopherApi Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
 
 #### Learn the Toopher API
 Make sure you visit [http://dev.toopher.com](http://dev.toopher.com) to get acquainted with the Toopher API fundamentals.  The documentation there will tell you the details about the operations this API wrapper library provides.
@@ -28,7 +28,7 @@ This library makes it super simple to do the Toopher two-step.  Check it out:
 require 'toopher_api'
 
 # Create an API object using your credentials
-toopher = ToopherAPI.new("key", "secret")
+toopher = ToopherApi.new("key", "secret")
 
 # Step 1 - Pair with their phone's Toopher app
 pairing = toopher.pair("username@yourservice.com", "pairing phrase")
@@ -50,7 +50,7 @@ end
 ```
 
 #### Dependencies
-'ToopherAPI Ruby Client depends on the oauth and json gems.  'gem' will make sure these are installed.  To install manually:
+'ToopherApi Ruby Client depends on the oauth and json gems.  'gem' will make sure these are installed.  To install manually:
 ```shell
 $ gem install oauth
 $ gem install json
@@ -82,7 +82,7 @@ begin
     auth = api.authenticate(user_name, terminal_identifier)
 
     # if you got here, everything is good!  poll the auth request status as described above
-    # there are four distinct errors ToopherAPI can return if it needs more data
+    # there are four distinct errors ToopherApi can return if it needs more data
 rescue UserDisabledError
     # you have marked this user as disabled in the Toopher API.
 rescue UnknownUserError

@@ -21,7 +21,7 @@ end
 
 url = ENV['TOOPHER_BASE_URL']
 puts 'using base url = ' + url
-toopher = ToopherAPI.new(key, secret, url)
+toopher = ToopherApi.new(key, secret, url)
 
 puts 'STEP 1: Pair device'
 puts 'enter pairing phrase:'

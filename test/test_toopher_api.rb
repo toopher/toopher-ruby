@@ -62,7 +62,7 @@ end
 
 class TestToopherApi < Test::Unit::TestCase
   def setup
-    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @toopher = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {
       :id => UUIDTools::UUID.random_create.to_str,
       :name => 'user',
@@ -130,19 +130,19 @@ class TestToopherApi < Test::Unit::TestCase
 
   def test_constructor
     assert_raise ArgumentError do
-      api = ToopherAPI.new
+      api = ToopherApi.new
     end
 
     assert_raise ArgumentError do
-      api = ToopherAPI.new('key')
+      api = ToopherApi.new('key')
     end
 
     assert_raise ArgumentError do
-      api = ToopherAPI.new('', 'secret')
+      api = ToopherApi.new('', 'secret')
     end
 
     assert_nothing_raised do
-      api = ToopherAPI.new('key', 'secret')
+      api = ToopherApi.new('key', 'secret')
     end
 
   end
@@ -584,23 +584,23 @@ class TestToopherApi < Test::Unit::TestCase
   end
 
   def test_version_string_exists
-    major, minor, patch = ToopherAPI::VERSION.split('.')
+    major, minor, patch = ToopherApi::VERSION.split('.')
     assert(major >= '1', 'version string (major level) is invalid')
     assert(minor >= '0', 'version string (minor level) is invalid')
     assert(patch >= '0', 'version string (patch level) is invalid')
-    assert(ToopherAPI::VERSION >= '1.0.6', 'version string does not exist')
+    assert(ToopherApi::VERSION >= '1.0.6', 'version string does not exist')
   end
 
   def test_gemspec_version_matches_version_string
     version_string = File.open('toopher_api.gemspec').grep(/version/).first
     gemspec_version = /version\s+=\s+'([\d.]+)'/.match(version_string).captures.first
-    assert(ToopherAPI::VERSION == gemspec_version, "version strings do not match: library = #{ToopherAPI::VERSION} and gemspec = #{gemspec_version}")
+    assert(ToopherApi::VERSION == gemspec_version, "version strings do not match: library = #{ToopherApi::VERSION} and gemspec = #{gemspec_version}")
   end
 end
 
 class TestPairing < Test::Unit::TestCase
   def setup
-    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @toopher = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
@@ -755,7 +755,7 @@ end
 
 class TestAuthenticationRequest < Test::Unit::TestCase
   def setup
-    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @toopher = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
@@ -881,7 +881,7 @@ end
 
 class TestUserTerminal < Test::Unit::TestCase
   def setup
-    @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
+    @toopher = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
@@ -966,7 +966,7 @@ class TestUser < Test::Unit::TestCase
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    toopher = ToopherApi.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     user.refresh_from_server(toopher)
     assert(user.id == '1', 'bad user id')
     assert(user.name == 'user name changed', 'bad user name')
@@ -989,7 +989,7 @@ class TestUser < Test::Unit::TestCase
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    toopher = ToopherApi.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     assert_nothing_raised do
       if disable
         user.disable(toopher)
@@ -1024,7 +1024,7 @@ class TestUser < Test::Unit::TestCase
         :status => 200
       )
 
-    toopher = ToopherAPI.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
+    toopher = ToopherApi.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://toopher.test/v1/")
     result = user.reset(toopher)
     assert(result == true)
   end
