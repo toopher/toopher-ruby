@@ -4,8 +4,24 @@ require 'webmock/test_unit'
 require 'toopher_api'
 require 'uuidtools'
 require 'fastimage'
+require 'time'
+require 'mocha/test_unit'
 
-class TestToopher < Test::Unit::TestCase
+class TestToopherIframe < Test::Unit::TestCase
+  def setup
+    @iframe_api = ToopherIframe.new('abcdefg', 'hijklmnop', { :nonce => '12345678' }, base_url = 'https://api.toopher.test/v1/')
+  end
+
+  def test_get_user_management_url()
+    Time.stubs(:now).returns(Time.at(1000))
+    expected = 'https://api.toopher.test/v1/web/manage_user?username=jdoe&reset_email=jdoe%40example.com&v=2&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=sV8qoKnxJ3fxfP6AHNa0eNFxzJs%3D'
+
+    user_management_iframe_url = @iframe_api.get_user_management_url('jdoe', 'jdoe@example.com')
+    assert(user_management_iframe_url == expected, 'bad user management url')
+  end
+end
+
+class TestToopherApi < Test::Unit::TestCase
   def setup
     @toopher = ToopherAPI.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://toopher.test/v1/')
     @user = {

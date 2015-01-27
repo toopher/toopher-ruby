@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.add_dependency('json', '>= 1.7.5')
   s.add_dependency('uuidtools', '>= 2.1.5')
   s.add_dependency('fastimage', '>= 1.6.6')
+  s.add_dependency('mocha', '>= 1.1.0')
 
   s.add_development_dependency('webmock', '>= 1.9.0')
   s.add_development_dependency('yard', '>= 0.8.3')

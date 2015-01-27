@@ -27,6 +27,10 @@ require 'uri'
 require 'json'
 require 'oauth'
 require 'uuidtools'
+require 'time'
+
+# Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
+DEFAULT_BASE_URL = 'https://api.toopher.com/v1/'
 
 # An exception class used to indicate an error returned by a Toopher API request
 class ToopherApiError < StandardError
@@ -45,13 +49,44 @@ end
 class PairingDeactivatedError< ToopherApiError
 end
 
+class ToopherIframe
+  DEFAULT_IFRAME_TTL = 100
+  IFRAME_VERSION = '2'
+
+  def initialize(key, secret, options, base_url = DEFAULT_BASE_URL)
+    key.empty? and raise ArgumentError, "Toopher consumer key cannot be empty!"
+    secret.empty? and raise ArgumentError, "Toopher consumer secret cannot be empty!"
+
+    @oauth_options = options.merge(:site => base_url, :scheme => :query_string)
+    @oauth_consumer = OAuth::Consumer.new(key, secret, @oauth_options)
+    @base_url = base_url
+  end
+
+  def get_user_management_url(username, reset_email, **kwargs)
+    ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
+    params = {
+      :username => username,
+      :reset_email => reset_email,
+      :v => IFRAME_VERSION,
+    }
+    params.merge!(kwargs)
+    return get_oauth_signed_url('web/manage_user', ttl, params)
+  end
+
+  private
+
+  def get_oauth_signed_url(url, ttl, **kwargs)
+    kwargs[:expires] ||= (Time.now.to_i + ttl).to_s
+    url = url + '?' + URI.encode_www_form(kwargs)
+    res = Net::HTTP::Get.new(@base_url + url)
+    return @oauth_consumer.sign!(res, nil)
+  end
+end
+
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherAPI
   # Version of the library
   VERSION = '1.1.0'
-
-  # Default URL for the Toopher webservice API.  Can be overridden in the constructor if necessary.
-  DEFAULT_BASE_URL = 'https://api.toopher.com/v1/'
 
   # @!attribute advanced
   #   @return [AdvancedApiUsageFactory] Holds advanced methods of Toopher API
