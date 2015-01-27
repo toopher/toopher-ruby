@@ -394,11 +394,13 @@ class Pairing
     return api.advanced.raw.get(url, :raw => true)
   end
 
+  private
+
   def update(json_obj)
     @id = json_obj['id']
     @enabled = json_obj['enabled']
     @pending = json_obj['pending']
-    @user.update(json_obj['user'])
+    @user.send(:update, json_obj['user'])
     @raw = json_obj
   end
 end
@@ -471,14 +473,16 @@ class AuthenticationRequest
     return AuthenticationRequest.new(result)
   end
 
+  private
+
   def update(json_obj)
     @id = json_obj['id']
     @pending = json_obj['pending']
     @granted = json_obj['granted']
     @automated = json_obj['automated']
     @reason = json_obj['reason']
-    @terminal.update(json_obj['terminal'])
-    @user.update(json_obj['user'])
+    @terminal.send(:update, json_obj['terminal'])
+    @user.send(:update, json_obj['user'])
     @raw = json_obj
   end
 end
@@ -544,11 +548,13 @@ class UserTerminal
     update(result)
   end
 
+  private
+
   def update(json_obj)
     @id = json_obj['id']
     @name = json_obj['name']
     @name_extra = json_obj['name_extra']
-    @user.update(json_obj['user'])
+    @user.send(:update, json_obj['user'])
     @raw = json_obj
   end
 end
@@ -637,6 +643,8 @@ class User
     api.advanced.raw.post('users/reset', params)
     return true
   end
+
+  private
 
   def update(json_obj)
     @id = json_obj['id']
