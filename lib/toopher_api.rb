@@ -156,9 +156,6 @@ end
 
 # Contains HTTP Request methods
 class ApiRawRequester
-  # Version of the library
-  VERSION = '1.1.0'
-
   # Creates a ApiRawRequester for using HTTP request methods
   #
   # @param [String] key Your Toopher API Key
@@ -166,13 +163,10 @@ class ApiRawRequester
   # @param [Hash] options OAuth Options hash.
   # @param [string] base_url The base URL to use for the Toopher API
   def initialize(key, secret, options, base_url)
-    consumer_key = key
-    consumer_secret = secret
+    key.empty? and raise ArgumentError, "Toopher consumer key cannot be empty!"
+    secret.empty? and raise ArgumentError, "Toopher consumer secret cannot be empty!"
 
-    consumer_key.empty? and raise ArgumentError, "Toopher consumer key cannot be empty!"
-    consumer_secret.empty? and raise ArgumentError, "Toopher consumer secret cannot be empty!"
-
-    @oauth_consumer = OAuth::Consumer.new(consumer_key, consumer_secret)
+    @oauth_consumer = OAuth::Consumer.new(key, secret)
     @oauth_options = options
     @base_url = base_url
   end
@@ -197,7 +191,7 @@ class ApiRawRequester
 
   private
   def request(url, req, raw=nil)
-    req['User-Agent'] = "Toopher-Ruby/#{VERSION} (Ruby #{RUBY_VERSION})"
+    req['User-Agent'] = "Toopher-Ruby/#{ToopherAPI::VERSION} (Ruby #{RUBY_VERSION})"
     http = Net::HTTP::new(url.host, url.port)
     http.use_ssl = url.port == 443
     req.oauth!(http, @oauth_consumer, nil, @oauth_options)
