@@ -867,7 +867,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
         :status => 200
       )
 
-    auth_request_updated = auth_request.authenticate_with_otp('otp', @toopher)
+    auth_request_updated = auth_request.grant_with_otp(@toopher, 'otp')
     assert(auth_request_updated.id == @auth_request['id'], 'bad auth request id')
     assert(auth_request_updated.pending == false, 'auth request should not be pending')
     assert(auth_request_updated.granted == true, 'auth request should be granted')

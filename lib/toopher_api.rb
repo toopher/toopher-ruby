@@ -470,7 +470,7 @@ class AuthenticationRequest
     update(result)
   end
 
-  def authenticate_with_otp(otp, api, **kwargs)
+  def grant_with_otp(api, otp, **kwargs)
     url = 'authentication_requests/' + @id + '/otp_auth'
     params = { :otp => otp }
     params.merge!(kwargs)
