@@ -75,7 +75,7 @@ class ToopherIframe
       :v => IFRAME_VERSION,
     }
     params.merge!(kwargs)
-    return get_oauth_signed_url('web/manage_user', ttl, params)
+    get_oauth_signed_url('web/manage_user', ttl, params)
   end
 
   def get_authentication_url(username, reset_email, request_token, action_name='Log In', requester_metadata='None', **kwargs)
@@ -93,7 +93,7 @@ class ToopherIframe
       :requester_metadata => requester_metadata,
     }
     params.merge!(kwargs)
-    return get_oauth_signed_url('web/authenticate', ttl, params)
+    get_oauth_signed_url('web/authenticate', ttl, params)
   end
 
   def validate_postback(data, request_token='', **kwargs)
@@ -125,7 +125,7 @@ class ToopherIframe
     if Time.now.to_i - data[:timestamp].to_i >= ttl
       raise SignatureValidationError, 'TTL expired'
     end
-    return data
+    data
   end
 
   private
@@ -135,14 +135,14 @@ class ToopherIframe
     secret = @oauth_consumer.secret.encode('utf-8')
     digest = OpenSSL::Digest::Digest.new('sha1')
     hmac = OpenSSL::HMAC.digest(digest, secret, to_sign)
-    return Base64.encode64(hmac).chomp.gsub( /\n/, '' )
+    Base64.encode64(hmac).chomp.gsub( /\n/, '' )
   end
 
   def get_oauth_signed_url(url, ttl, **kwargs)
     kwargs[:expires] ||= (Time.now.to_i + ttl).to_s
     url = url + '?' + URI.encode_www_form(kwargs)
     res = Net::HTTP::Get.new(@base_url + url)
-    return @oauth_consumer.sign!(res, nil)
+    @oauth_consumer.sign!(res, nil)
   end
 end
 
@@ -184,7 +184,7 @@ class ToopherAPI
       params[:pairing_phrase] = phrase_or_num
     end
 
-    return Pairing.new(@advanced.raw.post(url, params))
+    Pairing.new(@advanced.raw.post(url, params))
   end
 
   # Authenticate an action with Toopher
@@ -211,7 +211,7 @@ class ToopherAPI
     params['action_name'] = action_name unless action_name.empty?
     params.merge!(kwargs)
 
-    return AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
+    AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
   end
 end
 
@@ -273,7 +273,7 @@ class ApiRawRequester
     url = URI.parse(@base_url + endpoint)
     req = Net::HTTP::Post.new(url.path)
     req.set_form_data(kwargs)
-    return request(url, req)
+    request(url, req)
   end
 
   def get(endpoint, **kwargs)
@@ -284,10 +284,11 @@ class ApiRawRequester
       raw = kwargs.delete(:raw)
       req = Net::HTTP::Get.new(url.path + '?' + URI.encode_www_form(kwargs))
     end
-    return request(url, req, raw)
+    request(url, req, raw)
   end
 
   private
+
   def request(url, req, raw=nil)
     req['User-Agent'] = "Toopher-Ruby/#{ToopherAPI::VERSION} (Ruby #{RUBY_VERSION})"
     http = Net::HTTP::new(url.host, url.port)
@@ -296,11 +297,7 @@ class ApiRawRequester
     res = http.request(req)
     decoded = JSON.parse(res.body) if raw.nil? or res.code.to_i >= 400
     parse_request_error(decoded) if res.code.to_i >= 400
-    if raw.nil?
-      return decoded
-    else
-      return res.body
-    end
+    raw.nil? ? decoded : res.body
   end
 
   def parse_request_error(decoded)
@@ -333,7 +330,7 @@ class Pairings
   #
   # @return [Pairing] Information about the pairing request
   def get_by_id(pairing_id)
-    return Pairing.new(@raw.get('pairings/' + pairing_id))
+    Pairing.new(@raw.get('pairings/' + pairing_id))
   end
 
 end
@@ -374,7 +371,7 @@ class Pairing
   def get_reset_link(api, **kwargs)
     url = 'pairings/' + @id + '/generate_reset_link'
     result = api.advanced.raw.post(url, kwargs)
-    return result['url']
+    result['url']
   end
 
   def email_reset_link_to_user(api, email, **kwargs)
@@ -382,12 +379,12 @@ class Pairing
     params = { :reset_email => email }
     params.merge!(kwargs)
     api.advanced.raw.post(url, params)
-    return true # would raise error in parse_request_error() if failed
+    true # would raise error in parse_request_error() if failed
   end
 
   def get_qr_code_image(api)
     url = 'qr/pairings/' + @id
-    return api.advanced.raw.get(url, :raw => true)
+    api.advanced.raw.get(url, :raw => true)
   end
 
   private
@@ -411,7 +408,7 @@ class AuthenticationRequests
   #
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
   def get_by_id(authentication_request_id)
-    return AuthenticationRequest.new(@raw.get('authentication_requests/' + authentication_request_id))
+    AuthenticationRequest.new(@raw.get('authentication_requests/' + authentication_request_id))
   end
 end
 
@@ -471,7 +468,7 @@ class AuthenticationRequest
     params = { :otp => otp }
     params.merge!(kwargs)
     result = api.advanced.raw.post(url, params)
-    return AuthenticationRequest.new(result)
+    AuthenticationRequest.new(result)
   end
 
   private
@@ -521,7 +518,7 @@ class UserTerminals
   #
   # @param [String] terminal_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal.
   def get_by_id(terminal_id)
-    return UserTerminal.new(@raw.get('user_terminals/' + terminal_id))
+    UserTerminal.new(@raw.get('user_terminals/' + terminal_id))
   end
 
   # Create a new user terminal
@@ -535,7 +532,7 @@ class UserTerminals
       :name_extra => requester_terminal_id
     }
     params.merge!(kwargs)
-    return UserTerminal.new(@raw.post('user_terminals/create', params))
+    UserTerminal.new(@raw.post('user_terminals/create', params))
   end
 
 end
@@ -593,7 +590,7 @@ class Users
   #
   # @param [String] user_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user.
   def get_by_id(user_id)
-    return User.new(@raw.get('users/' + user_id))
+    User.new(@raw.get('users/' + user_id))
   end
 
   # Check on the status of a user
@@ -608,7 +605,7 @@ class Users
       raise ToopherApiError, 'No users with name = #{username}'
     end
 
-    return User.new(users[0])
+    User.new(users[0])
   end
 
   # Create a new user
@@ -617,7 +614,7 @@ class Users
   def create(username, **kwargs)
     params = { :name => username }
     params.merge!(kwargs)
-    return User.new(@raw.post('users/create', params))
+    User.new(@raw.post('users/create', params))
   end
 end
 
@@ -665,7 +662,7 @@ class User
   def reset(api)
     params = { :name => @name }
     api.advanced.raw.post('users/reset', params)
-    return true
+    true
   end
 
   private
