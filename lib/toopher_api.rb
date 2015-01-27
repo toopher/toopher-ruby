@@ -149,7 +149,7 @@ end
 # Abstracts calls to the Toopher OAuth webservice
 class ToopherApi
   # Version of the library
-  VERSION = '1.1.0'
+  VERSION = '2.0.0'
 
   # @!attribute advanced
   #   @return [AdvancedApiUsageFactory] Holds advanced methods of Toopher API
