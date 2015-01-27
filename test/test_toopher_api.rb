@@ -46,14 +46,14 @@ class TestToopherIframe < Test::Unit::TestCase
   end
 
   def test_get_authentication_url()
-    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=True&automation_allowed=True&challenge_required=False&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=URVngBe35eP%2FiFOSQ5ZpuGEYcJs%3D'
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=true&automation_allowed=true&challenge_required=false&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=TY3IPVmqnyCSPu4l2Kz3tP1YsUs%3D'
 
     authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :ttl => 100)
     assert(authentication_url == expected ,'bad authentication url')
   end
 
   def test_get_authentication_url_without_pairing()
-    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=False&automation_allowed=True&challenge_required=False&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=lbz2kuYG3BM2Y0mZLElbTiWPv8A%3D'
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=false&automation_allowed=true&challenge_required=false&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=AgiJMuZQjTaoh80FBZpMp4ABQfE%3D'
 
     authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :allow_inline_pairing=>false, :ttl => 100)
     assert(authentication_url == expected, 'bad authentication url')

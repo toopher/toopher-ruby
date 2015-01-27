@@ -139,10 +139,6 @@ class ToopherIframe
   end
 
   def get_oauth_signed_url(url, ttl, **kwargs)
-    bools = kwargs.select { |k,v| v.is_a?(TrueClass) || v.is_a?(FalseClass) }
-    bools.each do |k,v|
-      kwargs[k] = v.to_s.capitalize
-    end
     kwargs[:expires] ||= (Time.now.to_i + ttl).to_s
     url = url + '?' + URI.encode_www_form(kwargs)
     res = Net::HTTP::Get.new(@base_url + url)
