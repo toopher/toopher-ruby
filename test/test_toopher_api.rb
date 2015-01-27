@@ -9,15 +9,30 @@ require 'mocha/test_unit'
 
 class TestToopherIframe < Test::Unit::TestCase
   def setup
+    @request_token = 's9s7vsb'
     @iframe_api = ToopherIframe.new('abcdefg', 'hijklmnop', { :nonce => '12345678' }, base_url = 'https://api.toopher.test/v1/')
+    Time.stubs(:now).returns(Time.at(1000))
   end
 
   def test_get_user_management_url()
-    Time.stubs(:now).returns(Time.at(1000))
     expected = 'https://api.toopher.test/v1/web/manage_user?username=jdoe&reset_email=jdoe%40example.com&v=2&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=sV8qoKnxJ3fxfP6AHNa0eNFxzJs%3D'
 
     user_management_iframe_url = @iframe_api.get_user_management_url('jdoe', 'jdoe@example.com')
     assert(user_management_iframe_url == expected, 'bad user management url')
+  end
+
+  def test_get_authentication_url()
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=True&automation_allowed=True&challenge_required=False&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=URVngBe35eP%2FiFOSQ5ZpuGEYcJs%3D'
+
+    authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token)
+    assert(authentication_url == expected ,'bad authentication url')
+  end
+
+  def test_get_authentication_url_without_pairing()
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=False&automation_allowed=True&challenge_required=False&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=lbz2kuYG3BM2Y0mZLElbTiWPv8A%3D'
+
+    authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :allow_inline_pairing=>false)
+    assert(authentication_url == expected, 'bad authentication url')
   end
 end
 
