@@ -80,6 +80,10 @@ class TestToopherApi < Test::Unit::TestCase
       :name_extra => 'requester terminal id',
       :user => @user
     }
+    @action = {
+      :id => UUIDTools::UUID.random_create().to_str(),
+      :name => 'action name'
+    }
     @auth_request = {
       :id => UUIDTools::UUID.random_create().to_str(),
       :pending => false,
@@ -87,7 +91,8 @@ class TestToopherApi < Test::Unit::TestCase
       :automated => true,
       :reason => 'some reason',
       :terminal => @terminal,
-      :user => @user
+      :user => @user,
+      :action => @action
     }
   end
 
@@ -118,6 +123,8 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_auth_request.terminal.id == @auth_request[:terminal][:id], 'bad auth terminal id')
     assert(actual_auth_request.terminal.name == @auth_request[:terminal][:name], 'bad auth terminal name')
     assert(actual_auth_request.terminal.name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
+    assert(actual_auth_request.action.id == @auth_request[:action][:id], 'bad auth request action id')
+    assert(actual_auth_request.action.name == @auth_request[:action][:name], 'bad auth request action id')
     assert(actual_auth_request.raw['terminal']['name_extra'] == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
   end
 
@@ -760,6 +767,10 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       'name_extra' => 'requester terminal id',
       'user' => @user
     }
+    @action = {
+      'id' => UUIDTools::UUID.random_create().to_str(),
+      'name' => 'action name'
+    }
     @auth_request = {
       'id' => UUIDTools::UUID.random_create().to_str(),
       'pending' => false,
@@ -767,7 +778,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       'automated' => true,
       'reason' => 'some reason',
       'terminal' => @terminal,
-      'user' => @user
+      'user' => @user,
+      'action' => @action
     }
   end
 
@@ -785,6 +797,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
       assert(auth_request.user.id == @auth_request['user']['id'], 'bad user id')
       assert(auth_request.user.name == @auth_request['user']['name'], 'bad user name')
+      assert(auth_request.action.id == @auth_request['action']['id'], 'bad auth request action id')
+      assert(auth_request.action.name == @auth_request['action']['name'], 'bad auth request action name')
       assert(auth_request.user.disable_toopher_auth == @auth_request['user']['disable_toopher_auth'], 'bad user disabled status')
     end
   end
@@ -806,11 +820,14 @@ class TestAuthenticationRequest < Test::Unit::TestCase
             :name_extra => @auth_request['terminal']['name_extra'],
             :user => @auth_request['terminal']['user']
           },
-          :user => @auth_request['terminal']['user']
+          :user => @auth_request['terminal']['user'],
+          :action => {
+            :id => @auth_request['action']['id'],
+            :name => 'action name changed'
+          }
         }.to_json,
         :status => 200
       )
-    puts
     auth_request.refresh_from_server(@toopher)
     assert(auth_request.id == @auth_request['id'], 'bad auth request id')
     assert(auth_request.pending == false, 'auth request should not be pending')
@@ -820,6 +837,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
     assert(auth_request.terminal.name == 'term name changed', 'bad terminal name')
     assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
+    assert(auth_request.action.id == @auth_request['action']['id'], 'bad auth request action id')
+    assert(auth_request.action.name == 'action name changed', 'bad auth request action name')
   end
 
   def test_authenticate_with_otp()
@@ -842,7 +861,8 @@ class TestAuthenticationRequest < Test::Unit::TestCase
             :name_extra => 'requester terminal id',
             :user => @auth_request['terminal']['user']
           },
-          :user => @auth_request['terminal']['user']
+          :user => @auth_request['terminal']['user'],
+          :action => @auth_request['action']
         }.to_json,
         :status => 200
       )

@@ -450,6 +450,10 @@ class AuthenticationRequest
   #   @return  [User] Contains information about the User associated with this AuthenticationRequest
   attr_accessor :user
 
+  # @!attribute action
+  #   @return  [Action] Contains information about the Action associated with this AuthenticationRequest
+  attr_accessor :action
+
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
@@ -457,6 +461,7 @@ class AuthenticationRequest
   def initialize(json_obj)
     @terminal = UserTerminal.new(json_obj['terminal'])
     @user = User.new(json_obj['user'])
+    @action = Action.new(json_obj['action'])
     update(json_obj)
   end
 
@@ -483,6 +488,29 @@ class AuthenticationRequest
     @reason = json_obj['reason']
     @terminal.send(:update, json_obj['terminal'])
     @user.send(:update, json_obj['user'])
+    @action.send(:update, json_obj['action'])
+    @raw = json_obj
+  end
+end
+
+class Action
+  # @!attribute id
+  #   @return [String] A unique string identifier generated and returned by the Toopher web service that is used to identify this action.
+  attr_accessor :id
+
+  # @!attribute name
+  #   @return [String] The human recognizable action name associated with the given id.
+  attr_accessor :name
+
+  def initialize(json_obj)
+    update(json_obj)
+  end
+
+  private
+
+  def update(json_obj)
+    @id = json_obj['id']
+    @name = json_obj['name']
     @raw = json_obj
   end
 end
