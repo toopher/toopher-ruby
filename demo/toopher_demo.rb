@@ -21,7 +21,7 @@ end
 
 url = ENV['TOOPHER_BASE_URL']
 puts 'using base url = ' + url
-toopher = ToopherApi.new(key, secret, url)
+api = ToopherApi.new(key, secret, url)
 
 puts 'STEP 1: Pair device'
 puts 'enter pairing phrase:'
@@ -31,12 +31,12 @@ puts 'enter user name:'
 user = gets
 user.chomp!
 
-pairing = toopher.pair(user, phrase)
+pairing = api.pair(user, phrase)
 
 while(!pairing.enabled)
   puts 'waiting for authorization...'
   sleep(1)
-  pairing.refresh_from_server(toopher)
+  pairing.refresh_from_server(api)
 end
 
 puts 'paired successfully!'
@@ -51,12 +51,12 @@ while (true)
   action.chomp!
 
   puts 'sending authentication request...'
-  auth_request = toopher.authenticate(pairing.id, terminal_name, action)
+  auth_request = api.authenticate(pairing.id, terminal_name, action)
 
   while(auth_request.pending)
     puts 'waiting for authentication...'
     sleep(1)
-    auth_request.refresh_from_server(toopher)
+    auth_request.refresh_from_server(api)
   end
 
   automation = auth_request.automated ? 'automatically ' : ''

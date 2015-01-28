@@ -28,17 +28,17 @@ This library makes it super simple to do the Toopher two-step.  Check it out:
 require 'toopher_api'
 
 # Create an API object using your credentials
-toopher = ToopherApi.new("key", "secret")
+api = ToopherApi.new("key", "secret")
 
 # Step 1 - Pair with their phone's Toopher app
-pairing = toopher.pair("username@yourservice.com", "pairing phrase")
+pairing = api.pair("username@yourservice.com", "pairing phrase")
 
 # Step 2 - Authenticate a log in
-auth_status = toopher.authenticate(pairing.id, 'my computer')
+auth_status = api.authenticate(pairing.id, 'my computer')
 
 # Once they've responded you can then check the status
 while auth_status.pending
-    auth_status.refresh_from_server(toopher)
+    auth_status.refresh_from_server(api)
     sleep(1)
 end
 
