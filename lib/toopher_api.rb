@@ -162,7 +162,7 @@ class ToopherApi
   # @param [Hash] options OAuth Options hash.
   # @param [string] base_url The base URL to use for the Toopher API
   def initialize(key, secret, options = {}, base_url = DEFAULT_BASE_URL)
-    @advanced = AdvancedApiUsageFactory.new(key, secret, options, base_url)
+    @advanced = AdvancedApiUsageFactory.new(key, secret, options, base_url, self)
   end
 
   # Create the pairing between a particular user and their mobile device
@@ -184,7 +184,8 @@ class ToopherApi
       params[:pairing_phrase] = phrase_or_num
     end
 
-    Pairing.new(@advanced.raw.post(url, params))
+    response = @advanced.raw.post(url, params)
+    Pairing.new(response, self)
   end
 
   # Authenticate an action with Toopher
@@ -211,7 +212,8 @@ class ToopherApi
     params['action_name'] = action_name unless action_name.empty?
     params.merge!(kwargs)
 
-    AuthenticationRequest.new(@advanced.raw.post('authentication_requests/initiate', params))
+    response = @advanced.raw.post('authentication_requests/initiate', params)
+    AuthenticationRequest.new(response, self)
   end
 end
 
@@ -243,12 +245,12 @@ class AdvancedApiUsageFactory
   # @param [String] secret Your Toopher API Secret
   # @param [Hash] options OAuth Options hash.
   # @param [string] base_url The base URL to use for the Toopher API
-  def initialize(key, secret, options, base_url)
+  def initialize(key, secret, options, base_url, api)
     @raw = ApiRawRequester.new(key, secret, options, base_url)
-    @pairings = Pairings.new(@raw)
-    @authentication_requests = AuthenticationRequests.new(@raw)
-    @users = Users.new(@raw)
-    @user_terminals = UserTerminals.new(@raw)
+    @pairings = Pairings.new(api)
+    @authentication_requests = AuthenticationRequests.new(api)
+    @users = Users.new(api)
+    @user_terminals = UserTerminals.new(api)
   end
 end
 
@@ -320,8 +322,8 @@ end
 
 # Contains advanced ToopherApi methods associated with Pairings
 class Pairings
-  def initialize(raw)
-    @raw = raw
+  def initialize(api)
+    @api = api
   end
 
   # Check on the status of a previous pairing request
@@ -330,7 +332,8 @@ class Pairings
   #
   # @return [Pairing] Information about the pairing request
   def get_by_id(pairing_id)
-    Pairing.new(@raw.get('pairings/' + pairing_id))
+    response = @api.advanced.raw.get('pairings/' + pairing_id)
+    Pairing.new(response, @api)
   end
 
 end
@@ -358,33 +361,34 @@ class Pairing
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
-  def initialize(json_obj)
-    @user = User.new(json_obj['user'])
+  def initialize(json_obj, api)
+    @api = api
+    @user = User.new(json_obj['user'], api)
     update(json_obj)
   end
 
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('pairings/' + @id)
+  def refresh_from_server
+    result = @api.advanced.raw.get('pairings/' + @id)
     update(result)
   end
 
-  def get_reset_link(api, **kwargs)
+  def get_reset_link(**kwargs)
     url = 'pairings/' + @id + '/generate_reset_link'
-    result = api.advanced.raw.post(url, kwargs)
+    result = @api.advanced.raw.post(url, kwargs)
     result['url']
   end
 
-  def email_reset_link_to_user(api, email, **kwargs)
+  def email_reset_link_to_user(email, **kwargs)
     url = 'pairings/' + @id + '/send_reset_link'
     params = { :reset_email => email }
     params.merge!(kwargs)
-    api.advanced.raw.post(url, params)
+    @api.advanced.raw.post(url, params)
     true # would raise error in parse_request_error() if failed
   end
 
-  def get_qr_code_image(api)
+  def get_qr_code_image
     url = 'qr/pairings/' + @id
-    api.advanced.raw.get(url, :raw => true)
+    @api.advanced.raw.get(url, :raw => true)
   end
 
   private
@@ -400,15 +404,16 @@ end
 
 # Contains advanced ToopherApi methods associated with authentication requests
 class AuthenticationRequests
-  def initialize(raw)
-    @raw = raw
+  def initialize(api)
+    @api = api
   end
 
   # Check on the status of a previous authentication request
   #
   # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
   def get_by_id(authentication_request_id)
-    AuthenticationRequest.new(@raw.get('authentication_requests/' + authentication_request_id))
+    response = @api.advanced.raw.get('authentication_requests/' + authentication_request_id)
+    AuthenticationRequest.new(response, @api)
   end
 end
 
@@ -451,24 +456,25 @@ class AuthenticationRequest
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
-  def initialize(json_obj)
-    @terminal = UserTerminal.new(json_obj['terminal'])
-    @user = User.new(json_obj['user'])
+  def initialize(json_obj, api)
+    @api = api
+    @terminal = UserTerminal.new(json_obj['terminal'], api)
+    @user = User.new(json_obj['user'], api)
     @action = Action.new(json_obj['action'])
     update(json_obj)
   end
 
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('authentication_requests/' + @id)
+  def refresh_from_server
+    result = @api.advanced.raw.get('authentication_requests/' + @id)
     update(result)
   end
 
-  def grant_with_otp(api, otp, **kwargs)
+  def grant_with_otp(otp, **kwargs)
     url = 'authentication_requests/' + @id + '/otp_auth'
     params = { :otp => otp }
     params.merge!(kwargs)
-    result = api.advanced.raw.post(url, params)
-    AuthenticationRequest.new(result)
+    result = @api.advanced.raw.post(url, params)
+    update(result)
   end
 
   private
@@ -510,15 +516,16 @@ end
 
 # Contains advanced ToopherApi methods associated with user terminals
 class UserTerminals
-  def initialize(raw)
-    @raw = raw
+  def initialize(api)
+    @api = api
   end
 
   # Check on the status of a user terminal
   #
   # @param [String] terminal_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal.
   def get_by_id(terminal_id)
-    UserTerminal.new(@raw.get('user_terminals/' + terminal_id))
+    response = @api.advanced.raw.get('user_terminals/' + terminal_id)
+    UserTerminal.new(response, @api)
   end
 
   # Create a new user terminal
@@ -532,7 +539,8 @@ class UserTerminals
       :name_extra => requester_terminal_id
     }
     params.merge!(kwargs)
-    UserTerminal.new(@raw.post('user_terminals/create', params))
+    response = @api.advanced.raw.post('user_terminals/create', params)
+    UserTerminal.new(response, @api)
   end
 
 end
@@ -559,13 +567,14 @@ class UserTerminal
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
-  def initialize(json_obj)
-    @user = User.new(json_obj['user'])
+  def initialize(json_obj, api)
+    @api = api
+    @user = User.new(json_obj['user'], api)
     update(json_obj)
   end
 
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('user_terminals/' + @id)
+  def refresh_from_server
+    result = @api.advanced.raw.get('user_terminals/' + @id)
     update(result)
   end
 
@@ -582,15 +591,16 @@ end
 
 # Contains advanced ToopherApi methods associated with users
 class Users
-  def initialize(raw)
-    @raw = raw
+  def initialize(api)
+    @api = api
   end
 
   # Check on the status of a user
   #
   # @param [String] user_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user.
   def get_by_id(user_id)
-    User.new(@raw.get('users/' + user_id))
+    response = @api.advanced.raw.get('users/' + user_id)
+    User.new(response, @api)
   end
 
   # Check on the status of a user
@@ -598,14 +608,14 @@ class Users
   # @param [String] name The human recognizable user name.
   def get_by_name(username)
     params = { :name => username }
-    users = @raw.get('users', params)
+    users = @api.advanced.raw.get('users', params)
     if users.count > 1
       raise ToopherApiError, "Multiple users with name = #{username}"
     elsif users.count == 0
       raise ToopherApiError, "No users with name = #{username}"
     end
 
-    User.new(users[0])
+    User.new(users[0], @api)
   end
 
   # Create a new user
@@ -614,7 +624,8 @@ class Users
   def create(username, **kwargs)
     params = { :name => username }
     params.merge!(kwargs)
-    User.new(@raw.post('users/create', params))
+    response = @api.advanced.raw.post('users/create', params)
+    User.new(response, @api)
   end
 end
 
@@ -636,32 +647,33 @@ class User
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
-  def initialize(json_obj)
+  def initialize(json_obj, api)
+    @api = api
     update(json_obj)
   end
 
-  def refresh_from_server(api)
-    result = api.advanced.raw.get('users/' + @id)
+  def refresh_from_server
+    result = @api.advanced.raw.get('users/' + @id)
     update(result)
   end
 
-  def enable(api)
+  def enable
     params = { :disable_toopher_auth => false }
-    api.advanced.raw.post('users/' + @id, params)
+    @api.advanced.raw.post('users/' + @id, params)
     @disable_toopher_auth = false
     @raw['disable_toopher_auth'] = false
   end
 
-  def disable(api)
+  def disable
     params = { :disable_toopher_auth => true }
-    api.advanced.raw.post('users/' + @id, params)
+    @api.advanced.raw.post('users/' + @id, params)
     @disable_toopher_auth = true
     @raw['disable_toopher_auth'] = true
   end
 
-  def reset(api)
+  def reset
     params = { :name => @name }
-    api.advanced.raw.post('users/reset', params)
+    @api.advanced.raw.post('users/reset', params)
     true
   end
 
