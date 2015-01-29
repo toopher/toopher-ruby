@@ -100,7 +100,7 @@ class TestToopherApi < Test::Unit::TestCase
   def compare_to_default_terminal(actual_terminal)
     assert(actual_terminal.id == @terminal[:id], 'wrong terminal id')
     assert(actual_terminal.name == @terminal[:name], 'wrong terminal name')
-    assert(actual_terminal.name_extra == @terminal[:name_extra], 'wrong terminal name extra')
+    assert(actual_terminal.requester_specified_id == @terminal[:name_extra], 'wrong terminal name extra')
     assert(actual_terminal.user.name == @terminal[:user][:name], 'wrong user name')
     assert(actual_terminal.user.id == @terminal[:user][:id], 'wrong user id')
     assert(actual_terminal.raw['user']['name'] == @terminal[:user][:name], 'could not access raw data')
@@ -124,7 +124,7 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_auth_request.reason_code == @auth_request[:reason_code], 'bad auth reason code')
     assert(actual_auth_request.terminal.id == @auth_request[:terminal][:id], 'bad auth terminal id')
     assert(actual_auth_request.terminal.name == @auth_request[:terminal][:name], 'bad auth terminal name')
-    assert(actual_auth_request.terminal.name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
+    assert(actual_auth_request.terminal.requester_specified_id == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
     assert(actual_auth_request.action.id == @auth_request[:action][:id], 'bad auth request action id')
     assert(actual_auth_request.action.name == @auth_request[:action][:name], 'bad auth request action id')
     assert(actual_auth_request.raw['terminal']['name_extra'] == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
@@ -758,7 +758,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       assert(auth_request.reason_code == @auth_request['reason_code'], 'bad auth_request reason code')
       assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
       assert(auth_request.terminal.name == @auth_request['terminal']['name'], 'bad terminal name')
-      assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
+      assert(auth_request.terminal.requester_specified_id == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
       assert(auth_request.user.id == @auth_request['user']['id'], 'bad user id')
       assert(auth_request.user.name == @auth_request['user']['name'], 'bad user name')
       assert(auth_request.action.id == @auth_request['action']['id'], 'bad auth request action id')
@@ -802,7 +802,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     assert(auth_request.reason_code == 2, 'bad auth request reason code')
     assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
     assert(auth_request.terminal.name == 'term name changed', 'bad terminal name')
-    assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
+    assert(auth_request.terminal.requester_specified_id == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
     assert(auth_request.action.id == @auth_request['action']['id'], 'bad auth request action id')
     assert(auth_request.action.name == 'action name changed', 'bad auth request action name')
   end
@@ -843,7 +843,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     assert(auth_request.reason_code == 3, 'bad auth request reason code')
     assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
     assert(auth_request.terminal.name == 'term name', 'bad terminal name')
-    assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
+    assert(auth_request.terminal.requester_specified_id == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
   end
 end
 
@@ -869,7 +869,7 @@ class TestUserTerminal < Test::Unit::TestCase
 
       assert(terminal.id == @terminal['id'], 'bad terminal id')
       assert(terminal.name == @terminal['name'], 'bad terminal name')
-      assert(terminal.name_extra == @terminal['name_extra'], 'bad terminal name extra')
+      assert(terminal.requester_specified_id == @terminal['name_extra'], 'bad terminal name extra')
       assert(terminal.user.id == @terminal['user']['id'], 'bad user id')
       assert(terminal.user.name == @terminal['user']['name'], 'bad user name')
     end
@@ -896,7 +896,7 @@ class TestUserTerminal < Test::Unit::TestCase
     terminal.refresh_from_server
     assert(terminal.id == @terminal['id'], 'bad terminal id')
     assert(terminal.name == 'term name changed', 'bad terminal name')
-    assert(terminal.name_extra == @terminal['name_extra'], 'bad terminal name extra')
+    assert(terminal.requester_specified_id == @terminal['name_extra'], 'bad terminal name extra')
     assert(terminal.user.id == @terminal['user']['id'], 'bad user id')
     assert(terminal.user.name == 'user name changed', 'bad user name')
   end

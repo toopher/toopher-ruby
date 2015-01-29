@@ -191,7 +191,7 @@ class ToopherApi
   # Authenticate an action with Toopher
   #
   # @param [String] id_or_username The unique string identifier id returned by a previous pairing request or the username of the pairing's user.
-  # @param [String] terminal Either the terminal_name, a human recognizable string which represents the terminal from which the user is making the request, or terminal_name_extra, a string to help differentiate identically named terminals. The terminal_name would be displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
+  # @param [String] terminal Either the terminal_name, a human recognizable string which represents the terminal from which the user is making the request, or terminal_name_extra ()requester_specified_id), a string to help differentiate identically named terminals. The terminal_name would be displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
   # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
   #
   # @return [AuthenticationRequest] Information about the authentication request
@@ -562,7 +562,7 @@ class UserTerminal
 
   # @!attribute name_extra
   #   @return [String] A string to help differentiate identically named terminals.
-  attr_accessor :name_extra
+  attr_accessor :requester_specified_id
 
   # @!attribute user
   #   @return [User] Contains information about the User associated with this UserTerminal
@@ -588,7 +588,7 @@ class UserTerminal
   def update(json_obj)
     @id = json_obj['id']
     @name = json_obj['name']
-    @name_extra = json_obj['name_extra']
+    @requester_specified_id = json_obj['name_extra']
     @user.send(:update, json_obj['user'])
     @raw = json_obj
   end
