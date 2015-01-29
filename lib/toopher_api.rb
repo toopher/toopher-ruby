@@ -600,9 +600,9 @@ class Users
     params = { :name => username }
     users = @raw.get('users', params)
     if users.count > 1
-      raise ToopherApiError, 'Multiple users with name = #{username}'
+      raise ToopherApiError, "Multiple users with name = #{username}"
     elsif users.count == 0
-      raise ToopherApiError, 'No users with name = #{username}'
+      raise ToopherApiError, "No users with name = #{username}"
     end
 
     User.new(users[0])
