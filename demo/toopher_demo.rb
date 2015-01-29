@@ -36,7 +36,7 @@ pairing = api.pair(user, phrase)
 while(!pairing.enabled)
   puts 'waiting for authorization...'
   sleep(1)
-  pairing.refresh_from_server(api)
+  pairing.refresh_from_server
 end
 
 puts 'paired successfully!'
@@ -56,7 +56,7 @@ while (true)
   while(auth_request.pending)
     puts 'waiting for authentication...'
     sleep(1)
-    auth_request.refresh_from_server(api)
+    auth_request.refresh_from_server
   end
 
   automation = auth_request.automated ? 'automatically ' : ''

@@ -38,7 +38,7 @@ auth_status = api.authenticate(pairing.id, 'my computer')
 
 # Once they've responded you can then check the status
 while auth_status.pending
-    auth_status.refresh_from_server(api)
+    auth_status.refresh_from_server
     sleep(1)
 end
 
