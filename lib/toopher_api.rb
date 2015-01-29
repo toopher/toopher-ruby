@@ -437,8 +437,12 @@ class AuthenticationRequest
   attr_accessor :automated
 
   # @!attribute reason
-  #   @return  [String]A string which provides additional information about the reason for the authentication outcome (if available).
+  #   @return  [String] A string which provides additional information about the reason for the authentication outcome (if available).
   attr_accessor :reason
+
+  # @!attribute reason_code
+  #   @return  [Fixnum] The code associated with the reason of this authentication outcome (if available).
+  attr_accessor :reason_code
 
   # @!attribute terminal
   #   @return  [Terminal] Contains information about the Terminal associated with this AuthenticationRequest
@@ -485,6 +489,7 @@ class AuthenticationRequest
     @granted = json_obj['granted']
     @automated = json_obj['automated']
     @reason = json_obj['reason']
+    @reason_code = json_obj['reason_code']
     @terminal.send(:update, json_obj['terminal'])
     @user.send(:update, json_obj['user'])
     @action.send(:update, json_obj['action'])

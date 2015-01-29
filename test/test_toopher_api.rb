@@ -90,6 +90,7 @@ class TestToopherApi < Test::Unit::TestCase
       :granted => true,
       :automated => true,
       :reason => 'some reason',
+      :reason_code => 1,
       :terminal => @terminal,
       :user => @user,
       :action => @action
@@ -120,6 +121,7 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_auth_request.granted == @auth_request[:granted], 'bad auth granted')
     assert(actual_auth_request.automated == @auth_request[:automated], 'bad auth automated')
     assert(actual_auth_request.reason == @auth_request[:reason], 'bad auth reason')
+    assert(actual_auth_request.reason_code == @auth_request[:reason_code], 'bad auth reason code')
     assert(actual_auth_request.terminal.id == @auth_request[:terminal][:id], 'bad auth terminal id')
     assert(actual_auth_request.terminal.name == @auth_request[:terminal][:name], 'bad auth terminal name')
     assert(actual_auth_request.terminal.name_extra == @auth_request[:terminal][:name_extra], 'bad auth terminal name')
@@ -737,6 +739,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       'granted' => true,
       'automated' => true,
       'reason' => 'some reason',
+      'reason_code' => 1,
       'terminal' => @terminal,
       'user' => @user,
       'action' => @action
@@ -752,6 +755,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       assert(auth_request.granted == @auth_request['granted'], 'bad auth_request granted status')
       assert(auth_request.automated == @auth_request['automated'], 'bad auth_request automated status')
       assert(auth_request.reason == @auth_request['reason'], 'bad auth_request reason')
+      assert(auth_request.reason_code == @auth_request['reason_code'], 'bad auth_request reason code')
       assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
       assert(auth_request.terminal.name == @auth_request['terminal']['name'], 'bad terminal name')
       assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
@@ -774,6 +778,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
           :granted => true,
           :automated => true,
           :reason => 'reason has changed',
+          :reason_code => 2,
           :terminal => {
             :id => @auth_request['terminal']['id'],
             :name => 'term name changed',
@@ -794,6 +799,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     assert(auth_request.granted == true, 'auth request should be granted')
     assert(auth_request.automated == true, 'auth request should be automated')
     assert(auth_request.reason == 'reason has changed', 'bad auth request reason')
+    assert(auth_request.reason_code == 2, 'bad auth request reason code')
     assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
     assert(auth_request.terminal.name == 'term name changed', 'bad terminal name')
     assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
@@ -815,6 +821,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
           :granted => true,
           :automated => true,
           :reason => 'it is a test',
+          :reason_code => 3,
           :terminal => {
             :id => @auth_request['terminal']['id'],
             :name => 'term name',
@@ -833,6 +840,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     assert(auth_request.granted == true, 'auth request should be granted')
     assert(auth_request.automated == true, 'auth request should be automated')
     assert(auth_request.reason == 'it is a test', 'bad auth request reason')
+    assert(auth_request.reason_code == 3, 'bad auth request reason code')
     assert(auth_request.terminal.id == @auth_request['terminal']['id'], 'bad terminal id')
     assert(auth_request.terminal.name == 'term name', 'bad terminal name')
     assert(auth_request.terminal.name_extra == @auth_request['terminal']['name_extra'], 'bad terminal name extra')
