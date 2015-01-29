@@ -644,9 +644,9 @@ class User
   #   @return [String] The human recognizable user name associated with the given id.
   attr_accessor :name
 
-  # @!attribute disable_toopher_auth
+  # @!attribute toopher_authentication_enabled
   #   @return [Boolean] Whether or not this user has Toopher authentication enabled or disabled.
-  attr_accessor :disable_toopher_auth
+  attr_accessor :toopher_authentication_enabled
 
   # @!attribute raw
   #   @return [hash] The raw data returned from the Toopher API
@@ -662,18 +662,16 @@ class User
     update(result)
   end
 
-  def enable
-    params = { :disable_toopher_auth => false }
-    @api.advanced.raw.post('users/' + @id, params)
-    @disable_toopher_auth = false
-    @raw['disable_toopher_auth'] = false
+  def enable_toopher_authentication
+    url = 'users/' + @id
+    response = @api.advanced.raw.post(url, :disable_toopher_auth => false)
+    update(response)
   end
 
-  def disable
-    params = { :disable_toopher_auth => true }
-    @api.advanced.raw.post('users/' + @id, params)
-    @disable_toopher_auth = true
-    @raw['disable_toopher_auth'] = true
+  def disable_toopher_authentication
+    url = 'users/' + @id
+    response = @api.advanced.raw.post(url, :disable_toopher_auth => true)
+    update(response)
   end
 
   def reset
@@ -687,7 +685,11 @@ class User
   def update(json_obj)
     @id = json_obj['id']
     @name = json_obj['name']
-    @disable_toopher_auth = json_obj['disable_toopher_auth']
+    if json_obj.include? 'disable_toopher_auth'
+      @toopher_authentication_enabled = !json_obj.delete('disable_toopher_auth')
+    else
+      @toopher_authentication_enabled = true
+    end
     @raw = json_obj
   end
 end
