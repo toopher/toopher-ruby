@@ -363,8 +363,11 @@ class Pairing
 
   def initialize(json_obj, api)
     @api = api
+    @raw = json_obj
+    @id = json_obj['id']
+    @enabled = json_obj['enabled']
+    @pending = json_obj['pending']
     @user = User.new(json_obj['user'], api)
-    update(json_obj)
   end
 
   def refresh_from_server
@@ -394,11 +397,10 @@ class Pairing
   private
 
   def update(json_obj)
-    @id = json_obj['id']
+    @raw = json_obj
     @enabled = json_obj['enabled']
     @pending = json_obj['pending']
     @user.send(:update, json_obj['user'])
-    @raw = json_obj
   end
 end
 
