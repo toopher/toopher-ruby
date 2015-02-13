@@ -318,7 +318,7 @@ class TestToopherApi < Test::Unit::TestCase
       with(
         :body => {
           :user_name => @user[:name],
-          :terminal_name_extra => @terminal[:requester_specified_id]
+          :requester_specified_terminal_id => @terminal[:requester_specified_id]
         }
       ).
       to_return(
