@@ -654,7 +654,10 @@ class User
 
   def initialize(json_obj, api)
     @api = api
-    update(json_obj)
+    @raw = json_obj
+    @id = json_obj['id']
+    @name = json_obj['name']
+    @toopher_authentication_enabled = json_obj['toopher_authentication_enabled']
   end
 
   def refresh_from_server
@@ -664,13 +667,13 @@ class User
 
   def enable_toopher_authentication
     url = 'users/' + @id
-    response = @api.advanced.raw.post(url, :disable_toopher_auth => false)
+    response = @api.advanced.raw.post(url, :toopher_authentication_enabled => true)
     update(response)
   end
 
   def disable_toopher_authentication
     url = 'users/' + @id
-    response = @api.advanced.raw.post(url, :disable_toopher_auth => true)
+    response = @api.advanced.raw.post(url, :toopher_authentication_enabled => false)
     update(response)
   end
 
@@ -683,13 +686,8 @@ class User
   private
 
   def update(json_obj)
-    @id = json_obj['id']
-    @name = json_obj['name']
-    if json_obj.include? 'disable_toopher_auth'
-      @toopher_authentication_enabled = !json_obj.delete('disable_toopher_auth')
-    else
-      @toopher_authentication_enabled = true
-    end
     @raw = json_obj
+    @name = json_obj['name']
+    @toopher_authentication_enabled = json_obj['toopher_authentication_enabled']
   end
 end

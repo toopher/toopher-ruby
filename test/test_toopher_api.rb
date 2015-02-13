@@ -66,7 +66,7 @@ class TestToopherApi < Test::Unit::TestCase
     @user = {
       :id => UUIDTools::UUID.random_create.to_str,
       :name => 'user',
-      :disable_toopher_auth => false
+      :toopher_authentication_enabled => true
     }
     @pairing = {
       :id => UUIDTools::UUID.random_create.to_str,
@@ -243,7 +243,7 @@ class TestToopherApi < Test::Unit::TestCase
           :user => {
             :id => '1',
             :name => 'paired user',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           }
         }.to_json,
         :status => 200
@@ -257,7 +257,7 @@ class TestToopherApi < Test::Unit::TestCase
           :user => {
             :id => '2',
             :name => 'unpaired user',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           }
         }.to_json,
         :status => 200
@@ -385,7 +385,7 @@ class TestToopherApi < Test::Unit::TestCase
     user = @api.advanced.users.create(@user[:name])
     assert(user.id == @user[:id], 'wrong user id')
     assert(user.name == @user[:name], 'wrong user name')
-    assert(user.toopher_authentication_enabled != @user[:disable_toopher_auth], 'wrong user disabled status')
+    assert(user.toopher_authentication_enabled == @user[:toopher_authentication_enabled], 'wrong user disabled status')
   end
 
   def test_get_user_by_id
@@ -398,7 +398,7 @@ class TestToopherApi < Test::Unit::TestCase
     user = @api.advanced.users.get_by_id(@user[:id])
     assert(user.id == @user[:id], 'wrong user id')
     assert(user.name == @user[:name], 'wrong user name')
-    assert(user.toopher_authentication_enabled != @user[:disable_toopher_auth], 'wrong user disabled status')
+    assert(user.toopher_authentication_enabled == @user[:toopher_authentication_enabled], 'wrong user disabled status')
   end
 
   def test_get_user_by_name
@@ -412,7 +412,7 @@ class TestToopherApi < Test::Unit::TestCase
             },
             :id => @user[:id],
             :name => @user[:name],
-            :disable_toopher_auth => @user[:disable_toopher_auth]
+            :toopher_authentication_enabled => @user[:toopher_authentication_enabled]
           }
         ].to_json
       )
@@ -420,7 +420,7 @@ class TestToopherApi < Test::Unit::TestCase
     user = @api.advanced.users.get_by_name(@user[:name])
     assert(user.id == @user[:id], 'bad user id')
     assert(user.name == @user[:name], 'bad user name')
-    assert(user.toopher_authentication_enabled != @user[:disable_toopher_auth], 'bad user disabled status')
+    assert(user.toopher_authentication_enabled == @user[:toopher_authentication_enabled], 'bad user disabled status')
   end
 
   def test_no_user_to_get_by_name_raises_correct_error
@@ -445,7 +445,7 @@ class TestToopherApi < Test::Unit::TestCase
             },
             :id => 'ser1',
             :name => 'user',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           },
           {
             :requester => {
@@ -454,7 +454,7 @@ class TestToopherApi < Test::Unit::TestCase
             },
             :id => 'user2',
             :name => 'user',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           }
         ].to_json,
         :status => 200
@@ -606,7 +606,7 @@ class TestPairing < Test::Unit::TestCase
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
-      'disable_toopher_auth' => false
+      'toopher_authentication_enabled' => true
     }
     @pairing = {
       'id' => UUIDTools::UUID.random_create.to_str,
@@ -640,7 +640,7 @@ class TestPairing < Test::Unit::TestCase
           :user => {
             :id => @pairing['user']['id'],
             :name => 'paired user changed name',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           }
         }.to_json,
         :status => 200
@@ -721,7 +721,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
-      'disable_toopher_auth' => false
+      'toopher_authentication_enabled' => true
     }
     @terminal = {
       'id' => UUIDTools::UUID.random_create.to_str,
@@ -763,7 +763,7 @@ class TestAuthenticationRequest < Test::Unit::TestCase
       assert(auth_request.user.name == @auth_request['user']['name'], 'bad user name')
       assert(auth_request.action.id == @auth_request['action']['id'], 'bad auth request action id')
       assert(auth_request.action.name == @auth_request['action']['name'], 'bad auth request action name')
-      assert(auth_request.user.toopher_authentication_enabled != @auth_request['user']['disable_toopher_auth'], 'bad user disabled status')
+      assert(auth_request.user.toopher_authentication_enabled == @auth_request['user']['toopher_authentication_enabled'], 'bad user disabled status')
     end
   end
 
@@ -853,7 +853,7 @@ class TestUserTerminal < Test::Unit::TestCase
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user',
-      'disable_toopher_auth' => false
+      'toopher_authentication_enabled' => true
     }
     @terminal = {
       'id' => UUIDTools::UUID.random_create.to_str,
@@ -887,7 +887,7 @@ class TestUserTerminal < Test::Unit::TestCase
           :user => {
             :id => @terminal['user']['id'],
             :name => 'user name changed',
-            :disable_toopher_auth => false
+            :toopher_authentication_enabled => true
           }
         }.to_json,
         :status => 200
@@ -908,7 +908,7 @@ class TestUser < Test::Unit::TestCase
     @user = {
       'id' => UUIDTools::UUID.random_create.to_str,
       'name' => 'user name',
-      'disable_toopher_auth' => true
+      'toopher_authentication_enabled' => false
     }
   end
 
@@ -918,7 +918,7 @@ class TestUser < Test::Unit::TestCase
 
       assert(user.id == @user['id'], 'bad user id')
       assert(user.name == @user['name'], 'bad user name')
-      assert(user.toopher_authentication_enabled != @user['disable_toopher_auth'], 'user should be enabled')
+      assert(user.toopher_authentication_enabled == @user['toopher_authentication_enabled'], 'user should be enabled')
     end
   end
 
@@ -930,7 +930,7 @@ class TestUser < Test::Unit::TestCase
         :body => {
           :id => @user['id'],
           :name => 'user name changed',
-          :disable_toopher_auth => true
+          :toopher_authentication_enabled => false
         }.to_json,
         :status => 200
       )
@@ -941,39 +941,44 @@ class TestUser < Test::Unit::TestCase
     assert(user.toopher_authentication_enabled == false, 'user should be disabled')
   end
 
-  def disable_toopher_authentication(disable)
+  def test_enable_toopher_authentication
     user = User.new(@user, @api)
 
     stub_http_request(:post, 'https://api.toopher.test/v1/users/' + @user['id']).
       with(
-        :body => { :disable_toopher_auth => "#{disable}" }
+        :body => { :toopher_authentication_enabled => 'true' }
       ).
       to_return(
         :body => {
           :id => @user['id'],
           :name => @user['name'],
-          :disable_toopher_auth => disable
+          :toopher_authentication_enabled => true
         }.to_json,
         :status => 200
       )
 
-    assert_nothing_raised do
-      if disable
-        user.disable_toopher_authentication
-        assert(user.toopher_authentication_enabled == false, 'user should be disabled')
-      else
-        user.enable_toopher_authentication
-        assert(user.toopher_authentication_enabled == true, 'user should be enabled')
-      end
-    end
-  end
-
-  def test_enable_toopher_authentication
-    disable_toopher_authentication(false)
+    user.enable_toopher_authentication
+    assert(user.toopher_authentication_enabled == true, 'user should be enabled')
   end
 
   def test_disable_toopher_authentication
-    disable_toopher_authentication(true)
+    user = User.new(@user, @api)
+
+    stub_http_request(:post, 'https://api.toopher.test/v1/users/' + @user['id']).
+      with(
+        :body => { :toopher_authentication_enabled => 'false' }
+      ).
+      to_return(
+        :body => {
+          :id => @user['id'],
+          :name => @user['name'],
+          :toopher_authentication_enabled => false
+        }.to_json,
+        :status => 200
+      )
+
+    user.disable_toopher_authentication
+    assert(user.toopher_authentication_enabled == false, 'user should be enabled')
   end
 
   def test_reset_user
