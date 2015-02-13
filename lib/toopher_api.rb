@@ -541,7 +541,7 @@ class UserTerminals
     params = {
       :user_name => username,
       :name => terminal_name,
-      :name_extra => requester_terminal_id
+      :requester_specified_id => requester_terminal_id
     }
     params.merge!(kwargs)
     response = @api.advanced.raw.post('user_terminals/create', params)
@@ -574,8 +574,11 @@ class UserTerminal
 
   def initialize(json_obj, api)
     @api = api
+    @raw = json_obj
+    @id = json_obj['id']
+    @name = json_obj['name']
+    @requester_specified_id = json_obj['requester_specified_id']
     @user = User.new(json_obj['user'], api)
-    update(json_obj)
   end
 
   def refresh_from_server
@@ -586,11 +589,10 @@ class UserTerminal
   private
 
   def update(json_obj)
-    @id = json_obj['id']
-    @name = json_obj['name']
-    @requester_specified_id = json_obj['name_extra']
-    @user.send(:update, json_obj['user'])
     @raw = json_obj
+    @name = json_obj['name']
+    @requester_specified_id = json_obj['requester_specified_id']
+    @user.send(:update, json_obj['user'])
   end
 end
 
