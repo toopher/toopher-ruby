@@ -357,13 +357,13 @@ class Pairing
   #   @return [User] Contains information about the User associated with this Pairing
   attr_accessor :user
 
-  # @!attribute raw
+  # @!attribute raw_data
   #   @return [hash] The raw data returned from the Toopher API
-  attr_accessor :raw
+  attr_accessor :raw_data
 
   def initialize(json_obj, api)
     @api = api
-    @raw = json_obj
+    @raw_data = json_obj
     @id = json_obj['id']
     @enabled = json_obj['enabled']
     @pending = json_obj['pending']
@@ -397,7 +397,7 @@ class Pairing
   private
 
   def update(json_obj)
-    @raw = json_obj
+    @raw_data = json_obj
     @enabled = json_obj['enabled']
     @pending = json_obj['pending']
     @user.send(:update, json_obj['user'])
@@ -458,9 +458,9 @@ class AuthenticationRequest
   #   @return  [Action] Contains information about the Action associated with this AuthenticationRequest
   attr_accessor :action
 
-  # @!attribute raw
+  # @!attribute raw_data
   #   @return [hash] The raw data returned from the Toopher API
-  attr_accessor :raw
+  attr_accessor :raw_data
 
   def initialize(json_obj, api)
     @api = api
@@ -495,7 +495,7 @@ class AuthenticationRequest
     @terminal.send(:update, json_obj['terminal'])
     @user.send(:update, json_obj['user'])
     @action.send(:update, json_obj['action'])
-    @raw = json_obj
+    @raw_data = json_obj
   end
 end
 
@@ -508,6 +508,10 @@ class Action
   #   @return [String] The human recognizable action name associated with the given id.
   attr_accessor :name
 
+  # @!attribute raw_data
+  #   @return [hash] The raw data returned from the Toopher API
+  attr_accessor :raw_data
+
   def initialize(json_obj)
     update(json_obj)
   end
@@ -517,7 +521,7 @@ class Action
   def update(json_obj)
     @id = json_obj['id']
     @name = json_obj['name']
-    @raw = json_obj
+    @raw_data = json_obj
   end
 end
 
@@ -570,13 +574,13 @@ class UserTerminal
   #   @return [User] Contains information about the User associated with this UserTerminal
   attr_accessor :user
 
-  # @!attribute raw
+  # @!attribute raw_data
   #   @return [hash] The raw data returned from the Toopher API
-  attr_accessor :raw
+  attr_accessor :raw_data
 
   def initialize(json_obj, api)
     @api = api
-    @raw = json_obj
+    @raw_data = json_obj
     @id = json_obj['id']
     @name = json_obj['name']
     @requester_specified_id = json_obj['requester_specified_id']
@@ -591,7 +595,7 @@ class UserTerminal
   private
 
   def update(json_obj)
-    @raw = json_obj
+    @raw_data = json_obj
     @name = json_obj['name']
     @requester_specified_id = json_obj['requester_specified_id']
     @user.send(:update, json_obj['user'])
@@ -652,13 +656,13 @@ class User
   #   @return [Boolean] Whether or not this user has Toopher authentication enabled or disabled.
   attr_accessor :toopher_authentication_enabled
 
-  # @!attribute raw
+  # @!attribute raw_data
   #   @return [hash] The raw data returned from the Toopher API
   attr_accessor :raw
 
   def initialize(json_obj, api)
     @api = api
-    @raw = json_obj
+    @raw_data = json_obj
     @id = json_obj['id']
     @name = json_obj['name']
     @toopher_authentication_enabled = json_obj['toopher_authentication_enabled']
@@ -690,7 +694,7 @@ class User
   private
 
   def update(json_obj)
-    @raw = json_obj
+    @raw_data = json_obj
     @name = json_obj['name']
     @toopher_authentication_enabled = json_obj['toopher_authentication_enabled']
   end

@@ -103,7 +103,7 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_terminal.requester_specified_id == @terminal[:requester_specified_id], 'wrong terminal name extra')
     assert(actual_terminal.user.name == @terminal[:user][:name], 'wrong user name')
     assert(actual_terminal.user.id == @terminal[:user][:id], 'wrong user id')
-    assert(actual_terminal.raw['user']['name'] == @terminal[:user][:name], 'could not access raw data')
+    assert(actual_terminal.raw_data['user']['name'] == @terminal[:user][:name], 'could not access raw data')
   end
 
   def compare_to_default_pairing(actual_pairing)
@@ -112,7 +112,7 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_pairing.pending == @pairing[:pending], 'bad pairing pending')
     assert(actual_pairing.user.id == @pairing[:user][:id], 'bad user id')
     assert(actual_pairing.user.name == @pairing[:user][:name], 'bad user name')
-    assert(actual_pairing.raw['user']['name'] == @pairing[:user][:name], 'could not access raw data')
+    assert(actual_pairing.raw_data['user']['name'] == @pairing[:user][:name], 'could not access raw data')
   end
 
   def compare_to_default_auth_request(actual_auth_request)
@@ -127,7 +127,7 @@ class TestToopherApi < Test::Unit::TestCase
     assert(actual_auth_request.terminal.requester_specified_id == @auth_request[:terminal][:requester_specified_id], 'bad auth terminal name')
     assert(actual_auth_request.action.id == @auth_request[:action][:id], 'bad auth request action id')
     assert(actual_auth_request.action.name == @auth_request[:action][:name], 'bad auth request action id')
-    assert(actual_auth_request.raw['terminal']['requester_specified_id'] == @auth_request[:terminal][:requester_specified_id], 'bad auth terminal name')
+    assert(actual_auth_request.raw_data['terminal']['requester_specified_id'] == @auth_request[:terminal][:requester_specified_id], 'bad auth terminal name')
   end
 
   def test_constructor
