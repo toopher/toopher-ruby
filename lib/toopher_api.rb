@@ -64,6 +64,8 @@ class ToopherIframe
 
     @oauth_options = options.merge(:site => base_url, :scheme => :query_string)
     @oauth_consumer = OAuth::Consumer.new(key, secret, @oauth_options)
+    @key = key
+    @secret = secret
     @base_url = base_url
   end
 
@@ -96,39 +98,122 @@ class ToopherIframe
     get_oauth_signed_url('web/authenticate', ttl, params)
   end
 
-  def validate_postback(data, request_token='', **kwargs)
-    ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
+  def process_postback(data, request_token='', **kwargs)
+    toopher_data = Hash[URI::decode_www_form(data)]
 
-    # flatten data if necessary
-    if data.values.first.is_a? Enumerable
-      data = Hash[data.map {|k,v| [k, (v.is_a?(Enumerable) ? v.first : v)]}]
+    if toopher_data.has_key?('error_code')
+        error_code, error_message = Integer(toopher_data['error_code']), toopher_data['error_message']
+        if error_code == 704
+          raise UserDisabledError, "Error code #{error_code.to_s} : #{error_message}"
+        else
+          raise ToopherApiError,"Error code #{error_code.to_s} : #{error_message}"
+        end
+    else
+        validate_data(toopher_data, request_token, kwargs)
+        api = ToopherApi.new(@key, @secret)
+        resource_type = toopher_data['resource_type']
+        if resource_type == 'authentication_request'
+            AuthenticationRequest.new(create_authentication_request_hash(toopher_data), api)
+        elsif resource_type == 'pairing'
+            Pairing.new(create_pairing_hash(toopher_data), api)
+        elsif resource_type == 'requester_user'
+            User.new(create_user_hash(toopher_data), api)
+        else
+            raise ToopherApiError, "The postback resource type is not valid #{resource_type}"
+        end
     end
-
-    missing_keys = []
-    [:toopher_sig, :timestamp, :session_token].each do |required_key|
-      missing_keys << required_key if data[required_key].nil?
-    end
-    unless missing_keys.empty?
-      raise SignatureValidationError, "Missing required keys: #{missing_keys}"
-    end
-
-    if !request_token.empty? && request_token != data[:session_token]
-      raise SignatureValidationError, 'Session token does not match expected value!'
-    end
-
-    maybe_sig = data.delete(:toopher_sig)
-    computed_sig = signature(data)
-    if maybe_sig != computed_sig
-      raise SignatureValidationError, "Computed signature does not match submitted signature: #{computed_sig} vs #{maybe_sig}"
-    end
-
-    if Time.now.to_i - data[:timestamp].to_i >= ttl
-      raise SignatureValidationError, 'TTL expired'
-    end
-    data
   end
 
   private
+
+  def validate_data(data, request_token='', **kwargs)
+    check_for_missing_keys(data)
+    verify_session_token(data['session_token'], request_token)
+    check_if_signature_is_expired(data['timestamp'], kwargs)
+    validate_signature(data)
+  end
+
+  def check_for_missing_keys(data)
+    missing_keys = []
+    ['toopher_sig', 'timestamp', 'session_token'].each do |required_key|
+        missing_keys << required_key if data[required_key].nil?
+    end
+    if !missing_keys.empty?
+        raise SignatureValidationError, "Missing required keys: #{missing_keys.join(',')}"
+    end
+  end
+
+  def verify_session_token(session_token, request_token)
+    if !request_token.empty? && request_token != session_token
+        raise SignatureValidationError, 'Session token does not match expected value!'
+    end
+  end
+
+  def check_if_signature_is_expired(timestamp, kwargs)
+    ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
+    if Time.now.to_i - timestamp.to_i >= ttl
+        raise SignatureValidationError, 'TTL expired'
+    end
+  end
+
+  def validate_signature(data)
+    maybe_sig = data.delete('toopher_sig')
+    computed_sig = signature(data)
+    if maybe_sig != computed_sig
+        raise SignatureValidationError, "Computed signature does not match submitted signature: #{computed_sig} vs #{maybe_sig}"
+    end
+  end
+
+  def create_authentication_request_hash(data)
+    {
+        'id' => data['id'],
+        'pending' => data['pending'] == 'true',
+        'granted' => data['granted'] == 'true',
+        'automated' => data['automated'] == 'true',
+        'reason' => data['reason'],
+        'reason_code' => data['reason_code'],
+        'terminal' => {
+            'id' => data['terminal_id'],
+            'name' => data['terminal_name'],
+            'requester_specified_id' => data['terminal_requester_specified_id'],
+            'user' => {
+                'id' => data['pairing_user_id'],
+                'name' => data['user_name'],
+                'toopher_authentication_enabled' => data['user_toopher_authentication_enabled'] == 'true'
+            }
+        },
+        'user' => {
+            'id' => data['pairing_user_id'],
+            'name' => data['user_name'],
+            'toopher_authentication_enabled' => data['user_toopher_authentication_enabled'] == 'true'
+        },
+        'action' => {
+            'id' => data['action_id'],
+            'name' => data['action_name']
+        }
+    }
+  end
+
+  def create_pairing_hash(data)
+    {
+        'id' => data['id'],
+        'enabled' => data['enabled'] == 'true',
+        'pending' => data['pending'] == 'true',
+        'user' => {
+            'id' => data['pairing_user_id'],
+            'name' => data['user_name'],
+            'toopher_authentication_enabled' => data['user_toopher_authentication_enabled'] == 'true'
+        }
+    }
+  end
+
+  def create_user_hash(data)
+    {
+        'id' => data['id'],
+        'name' => data['name'],
+        'toopher_authentication_enabled' => data['toopher_authentication_enabled'] == 'true'
+    }
+  end
 
   def signature(data)
     to_sign = URI.encode_www_form(Hash[data.sort]).encode('utf-8')

@@ -12,30 +12,163 @@ class TestToopherIframe < Test::Unit::TestCase
     @request_token = 's9s7vsb'
     @iframe_api = ToopherIframe.new('abcdefg', 'hijklmnop', { :nonce => '12345678' }, base_url = 'https://api.toopher.test/v1/')
     Time.stubs(:now).returns(Time.at(1000))
+    @user = {
+        'id' => '1',
+        'name' => 'user name',
+        'toopher_authentication_enabled' => 'true',
+        'toopher_sig' => 'RszgG9QE1rF9t7DVTGg+1I25yHM=',
+        'session_token' => @request_token,
+        'timestamp' => '1000',
+        'resource_type' => 'requester_user'
+    }
+    @encoded_user = URI.encode_www_form(@user).encode('utf-8')
+    @pairing = {
+        'id' => '1',
+        'enabled' => 'true',
+        'pending' => 'false',
+        'pairing_user_id' => @user['id'],
+        'user_name' => @user['name'],
+        'user_toopher_authentication_enabled' => @user['toopher_authentication_enabled'],
+        'toopher_sig' => 'ucwKhkPpN4VxNbx3dMypWzi4tBg=',
+        'session_token' => @request_token,
+        'timestamp' => '1000',
+        'resource_type' => 'pairing'
+    }
+    @encoded_pairing = URI.encode_www_form(@pairing).encode('utf-8')
+    @auth_request = {
+        'id' => '1',
+        'pending' => 'false',
+        'granted' => 'true',
+        'automated' => 'false',
+        'reason' => 'it is a test',
+        'reason_code' => '100',
+        'terminal_id' => '1',
+        'terminal_name' => 'terminal name',
+        'terminal_requester_specified_id' => 'requester specified id',
+        'pairing_user_id' => @user['id'],
+        'user_name' => @user['name'],
+        'user_toopher_authentication_enabled' => @user['toopher_authentication_enabled'],
+        'action_id' => '1',
+        'action_name' => 'action name',
+        'toopher_sig' => 's+fYUtChrNMjES5Xa+755H7BQKE=',
+        'session_token' => @request_token,
+        'timestamp' => '1000',
+        'resource_type' => 'authentication_request'
+    }
+    @encoded_auth_request = URI.encode_www_form(@auth_request).encode('utf-8')
   end
 
-  def test_validate_good_signature_is_successful
-    data = {
-      :foo => 'bar',
-      :timestamp => '1000',
-      :session_token => @request_token,
-      :toopher_sig => '6d2c7GlQssGmeYYGpcf+V/kirOI='
-    }
-    assert_nothing_raised do
-      @iframe_api.validate_postback(data, @request_token)
-    end
+  def test_process_postback_returns_authentication_request
+    auth_request = @iframe_api.process_postback(@encoded_auth_request, @request_token)
+    assert_kind_of(AuthenticationRequest, auth_request)
+    assert(auth_request.id == @auth_request['id'], 'Authentication request id was incorrect')
+    assert(auth_request.pending == false, 'Authentication request should not be pending')
+    assert(auth_request.granted, 'Authentication request should be granted')
+    assert(auth_request.automated == false, 'Authentication request should not be automated')
+    assert(auth_request.reason == @auth_request['reason'], 'Authentication request reason was incorrect')
+    assert(auth_request.reason_code == @auth_request['reason_code'], 'Authentication request reason code was incorrect')
+    assert(auth_request.terminal.id == @auth_request['terminal_id'], 'Terminal id was incorrect')
+    assert(auth_request.terminal.name == @auth_request['terminal_name'], 'Terminal name was incorrect')
+    assert(auth_request.terminal.requester_specified_id == @auth_request['terminal_requester_specified_id'], 'Terminal requester specified id was incorrect')
+    assert(auth_request.user.id == @auth_request['pairing_user_id'], 'User id was incorrect')
+    assert(auth_request.user.name == @auth_request['user_name'], 'User name was incorrect')
+    assert(auth_request.user.toopher_authentication_enabled, 'User should be toopher authentication enabled')
+    assert(auth_request.action.id == @auth_request['action_id'], 'Action id was incorrect')
+    assert(auth_request.action.name == @auth_request['action_name'], 'Action name was incorrect')
   end
 
-  def test_arrays_get_flattened_for_validate
-    data = {
-      :foo => ['bar'],
-      :timestamp => ['1000'],
-      :session_token => [@request_token],
-      :toopher_sig => ['6d2c7GlQssGmeYYGpcf+V/kirOI=']
-    }
-    assert_nothing_raised do
-      @iframe_api.validate_postback(data, @request_token)
+  def test_process_postback_returns_pairing
+    pairing = @iframe_api.process_postback(@encoded_pairing, @request_token)
+    assert_kind_of(Pairing, pairing)
+    assert(pairing.id == @pairing['id'], 'Pairing id was incorrect')
+    assert(pairing.enabled, 'Pairing should be enabled')
+    assert(pairing.pending == false, 'Pairing should not be pending')
+    assert(pairing.user.id == @pairing['pairing_user_id'], 'User id was incorrect')
+    assert(pairing.user.name == @pairing['user_name'], 'User name was incorrect')
+    assert(pairing.user.toopher_authentication_enabled, 'User should be toopher authentication enabled')
+  end
+
+  def test_process_postback_returns_user
+    user = @iframe_api.process_postback(@encoded_user, @request_token)
+    assert_kind_of(User, user)
+    assert(user.id == @user['id'], 'User id was incorrect')
+    assert(user.name == @user['name'], 'User name was incorrect')
+    assert(user.toopher_authentication_enabled, 'User should be toopher authentication enabled')
+  end
+
+  def test_process_postback_with_extras_returns_authentication_request
+    assert_kind_of(AuthenticationRequest, @iframe_api.process_postback(@encoded_auth_request, @request_token, :ttl => 100))
+  end
+
+  def test_process_postback_without_request_token_returns_authentication_request
+    assert_kind_of(AuthenticationRequest, @iframe_api.process_postback(@encoded_auth_request))
+  end
+
+  def test_process_postback_bad_signature_raises_error
+    auth_request = @auth_request.clone
+    auth_request['toopher_sig'] = 'invalid'
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(auth_request), @request_token)
     end
+    assert("Computed signature does not match submitted signature: #{@auth_request['toopher_sig']} vs #{auth_request['toopher_sig']}" == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+  def test_process_postback_expired_signature_raises_error
+    Time.stubs(:now).returns(Time.at(2000))
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(@encoded_auth_request, @request_token)
+    end
+    assert('TTL expired' == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+  def test_process_postback_missing_signature_raises_error
+    @auth_request.delete('toopher_sig')
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert('Missing required keys: toopher_sig' == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+  def test_process_postback_missing_timestamp_raises_erroor
+    @auth_request.delete('timestamp')
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert('Missing required keys: timestamp' == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+  def test_process_postback_missing_session_token_raises_error
+    @auth_request.delete('session_token')
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert('Missing required keys: session_token' == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+
+  def test_process_postback_invalid_session_token_raises_error
+    @auth_request['session_token'] = 'invalid'
+    e = assert_raise SignatureValidationError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert('Session token does not match expected value!' == e.message, 'SignatureValidationError message was incorrect')
+  end
+
+  def test_process_postback_bad_resource_type_raises_error
+    @auth_request['resource_type'] = 'invalid'
+    @auth_request['toopher_sig'] = 'xEY+oOtJcdMsmTLp6eOy9isO/xQ='
+    e = assert_raise ToopherApiError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert("The postback resource type is not valid #{@auth_request['resource_type']}" == e.message, 'ToopherApiError message was incorrect')
+  end
+
+  def test_process_postback_with_704_raises_user_disabled_error
+    @auth_request.merge!({'error_code' => '704', 'error_message' => 'The specified user has disabled Toopher authentication.' })
+    e = assert_raise UserDisabledError do
+        @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+    end
+    assert("Error code #{@auth_request['error_code']} : #{@auth_request['error_message']}" == e.message, 'UserDisabledError message was incorrect')
   end
 
   def test_get_user_management_url
@@ -57,6 +190,12 @@ class TestToopherIframe < Test::Unit::TestCase
 
     authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :allow_inline_pairing=>false, :ttl => 100)
     assert(authentication_url == expected, 'bad authentication url')
+  end
+
+  private
+
+  def get_url_encoded_postback_data(data)
+      URI.encode_www_form(data).encode('utf-8')
   end
 end
 
