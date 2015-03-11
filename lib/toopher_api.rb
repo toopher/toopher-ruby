@@ -74,20 +74,14 @@ class ToopherIframe
     params = {
       :username => username,
       :reset_email => reset_email,
-      :v => IFRAME_VERSION,
     }
     params.merge!(kwargs)
     get_oauth_signed_url('web/manage_user', ttl, params)
   end
 
-  def get_authentication_url(username, reset_email='', request_token='', action_name='Log In', requester_metadata='None', **kwargs)
-    kwargs[:allow_inline_pairing] = true if kwargs[:allow_inline_pairing].nil?
-    kwargs[:automation_allowed] = true if kwargs[:automation_allowed].nil?
-    kwargs[:challenge_required] ||= false
+  def get_authentication_url(username, reset_email='', request_token='', action_name='Log In', requester_metadata='', **kwargs)
     ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
-
     params = {
-      :v => IFRAME_VERSION,
       :username => username,
       :reset_email => reset_email,
       :action_name => action_name,
@@ -240,6 +234,7 @@ class ToopherIframe
 
   def get_oauth_signed_url(url, ttl, **kwargs)
     kwargs[:expires] ||= (Time.now.to_i + ttl).to_s
+    kwargs[:v] = IFRAME_VERSION
     url = url + '?' + URI.encode_www_form(kwargs)
     res = Net::HTTP::Get.new(@base_url + url)
     @oauth_consumer.sign!(res, nil)
