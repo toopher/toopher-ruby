@@ -124,6 +124,21 @@ class ToopherIframe
     end
   end
 
+  def is_authentication_granted(data, request_token='', **kwargs)
+    begin
+        authentication_request = process_postback(data, request_token, **kwargs)
+        if authentication_request.instance_of? AuthenticationRequest
+            authentication_request.granted && !authentication_request.pending
+        else
+            false
+        end
+    rescue UserDisabledError
+        true
+    rescue
+        false
+    end
+  end
+
   private
 
   def validate_data(data, request_token='', **kwargs)
