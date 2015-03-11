@@ -69,7 +69,7 @@ class ToopherIframe
     @base_url = base_url
   end
 
-  def get_user_management_url(username, reset_email, **kwargs)
+  def get_user_management_url(username, reset_email='', **kwargs)
     ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
     params = {
       :username => username,
@@ -80,7 +80,7 @@ class ToopherIframe
     get_oauth_signed_url('web/manage_user', ttl, params)
   end
 
-  def get_authentication_url(username, reset_email, request_token, action_name='Log In', requester_metadata='None', **kwargs)
+  def get_authentication_url(username, reset_email='', request_token='', action_name='Log In', requester_metadata='None', **kwargs)
     kwargs[:allow_inline_pairing] = true if kwargs[:allow_inline_pairing].nil?
     kwargs[:automation_allowed] = true if kwargs[:automation_allowed].nil?
     kwargs[:challenge_required] ||= false

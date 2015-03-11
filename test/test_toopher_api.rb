@@ -214,22 +214,25 @@ class TestToopherIframe < Test::Unit::TestCase
 
   def test_get_user_management_url
     expected = 'https://api.toopher.test/v1/web/manage_user?username=jdoe&reset_email=jdoe%40example.com&v=2&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=sV8qoKnxJ3fxfP6AHNa0eNFxzJs%3D'
-
     user_management_iframe_url = @iframe_api.get_user_management_url('jdoe', 'jdoe@example.com', :ttl => 100)
     assert(user_management_iframe_url == expected, 'bad user management url')
   end
 
-  def test_get_authentication_url
-    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=true&automation_allowed=true&challenge_required=false&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=TY3IPVmqnyCSPu4l2Kz3tP1YsUs%3D'
+  def test_get_user_management_url_without_email_or_extras
+    expected = 'https://api.toopher.test/v1/web/manage_user?username=jdoe&reset_email=&v=2&expires=1300&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=SA7CAUj%2B5QcGO%2BMmdPv9ubbaozk%3D'
+    user_management_iframe_url = @iframe_api.get_user_management_url('jdoe')
+    assert(user_management_iframe_url == expected, 'bad user management url')
+  end
 
-    authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :ttl => 100)
+  def test_get_authentication_url
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=&action_name=Log+In&session_token=&requester_metadata=None&allow_inline_pairing=true&automation_allowed=true&challenge_required=false&expires=1300&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=pvJrzIjpMNeEMyb9yO1PSBuiQAI%3D'
+    authentication_url = @iframe_api.get_authentication_url('jdoe')
     assert(authentication_url == expected ,'bad authentication url')
   end
 
-  def test_get_authentication_url_without_pairing
-    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=Log+In&session_token=s9s7vsb&requester_metadata=None&allow_inline_pairing=false&automation_allowed=true&challenge_required=false&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=AgiJMuZQjTaoh80FBZpMp4ABQfE%3D'
-
-    authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, :allow_inline_pairing=>false, :ttl => 100)
+  def test_get_authentication_url_with_optional_params_and_extras
+    expected = 'https://api.toopher.test/v1/web/authenticate?v=2&username=jdoe&reset_email=jdoe%40example.com&action_name=it+is+a+test&session_token=s9s7vsb&requester_metadata=metadata&allow_inline_pairing=false&automation_allowed=true&challenge_required=false&expires=1100&oauth_consumer_key=abcdefg&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1000&oauth_nonce=12345678&oauth_version=1.0&oauth_signature=3JYP%2BeH6pvWH4ZVu1x0fgSrRzO4%3D'
+    authentication_url = @iframe_api.get_authentication_url('jdoe', 'jdoe@example.com', @request_token, 'it is a test', 'metadata', :allow_inline_pairing=>false, :ttl => 100)
     assert(authentication_url == expected, 'bad authentication url')
   end
 
