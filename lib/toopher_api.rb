@@ -93,7 +93,7 @@ class ToopherIframe
   end
 
   def process_postback(data, request_token='', **kwargs)
-    toopher_data = Hash[URI::decode_www_form(data)]
+    toopher_data = Hash[URI::decode_www_form(data['toopher_iframe_data'])]
 
     if toopher_data.has_key?('error_code')
         error_code, error_message = Integer(toopher_data['error_code']), toopher_data['error_message']

@@ -21,7 +21,7 @@ class TestToopherIframe < Test::Unit::TestCase
         'timestamp' => '1000',
         'resource_type' => 'requester_user'
     }
-    @encoded_user = URI.encode_www_form(@user).encode('utf-8')
+    @encoded_user = {'toopher_iframe_data' => URI.encode_www_form(@user).encode('utf-8')}
     @pairing = {
         'id' => '1',
         'enabled' => 'true',
@@ -34,7 +34,7 @@ class TestToopherIframe < Test::Unit::TestCase
         'timestamp' => '1000',
         'resource_type' => 'pairing'
     }
-    @encoded_pairing = URI.encode_www_form(@pairing).encode('utf-8')
+    @encoded_pairing = {'toopher_iframe_data' => URI.encode_www_form(@pairing).encode('utf-8')}
     @auth_request = {
         'id' => '1',
         'pending' => 'false',
@@ -55,7 +55,7 @@ class TestToopherIframe < Test::Unit::TestCase
         'timestamp' => '1000',
         'resource_type' => 'authentication_request'
     }
-    @encoded_auth_request = URI.encode_www_form(@auth_request).encode('utf-8')
+    @encoded_auth_request = {'toopher_iframe_data' => URI.encode_www_form(@auth_request).encode('utf-8')}
   end
 
   def test_process_postback_returns_authentication_request
@@ -263,7 +263,7 @@ class TestToopherIframe < Test::Unit::TestCase
   private
 
   def get_url_encoded_postback_data(data)
-      URI.encode_www_form(data).encode('utf-8')
+      {'toopher_iframe_data' => URI.encode_www_form(data).encode('utf-8')}
   end
 end
 
