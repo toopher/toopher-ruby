@@ -172,21 +172,21 @@ class TestToopherIframe < Test::Unit::TestCase
   end
 
   def test_is_authentication_granted_is_true_with_auth_request_granted
-    assert(@iframe_api.is_authentication_granted(@encoded_auth_request, @request_token), 'AuthenticationRequest granted should return true')
+    assert(@iframe_api.is_authentication_granted(@encoded_auth_request, @request_token), 'Authentication should be granted when AuthenticationRequest.granted = true')
   end
 
   def test_is_authentication_granted_is_true_with_auth_request_granted_and_extras
-    assert(@iframe_api.is_authentication_granted(@encoded_auth_request, @request_token, :ttl=>100), 'AuthenticationRequest granted with extras should return true')
+    assert(@iframe_api.is_authentication_granted(@encoded_auth_request, @request_token, :ttl=>100), 'Authentication should be granted when AuthenticationRequest.granted = true and extras')
   end
 
   def test_is_authentication_granted_is_true_with_auth_request_without_request_token
-    assert(@iframe_api.is_authentication_granted(@encoded_auth_request), 'AuthenticationRequest granted without request token should return true')
+    assert(@iframe_api.is_authentication_granted(@encoded_auth_request), 'Authentication should be granted when AuthenticationRequest.granted = true and without request token')
   end
 
   def test_is_authentication_granted_is_false_with_auth_request_not_granted
     @auth_request['granted'] = 'false'
     @auth_request['toopher_sig'] = 'nADNKdly9zA2IpczD6gvDumM48I='
-    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'AuthenticationRequest not granted should return false')
+    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'Authentication should not be granted when AuthenticationRequest.granted = false')
   end
 
   def test_is_authentication_granted_is_false_with_auth_request_granted_and_pending_true
@@ -197,26 +197,26 @@ class TestToopherIframe < Test::Unit::TestCase
   end
 
   def test_is_authentication_granted_is_false_when_pairing_is_returned
-    assert(@iframe_api.is_authentication_granted(@encoded_pairing, @request_token) == false, 'Pairing object should return false')
+    assert(@iframe_api.is_authentication_granted(@encoded_pairing, @request_token) == false, 'Authentication should not be granted when Pairing is returned')
   end
 
   def test_is_authentication_granted_is_false_when_user_is_returned
-    assert(@iframe_api.is_authentication_granted(@encoded_user, @request_token) == false, 'User object should return false')
+    assert(@iframe_api.is_authentication_granted(@encoded_user, @request_token) == false, 'Authentication should not be granted when User is returned')
   end
 
   def test_is_authentication_granted_is_false_when_signature_validation_error_is_raised
     @auth_request.delete('id')
-    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'SignatureValidationError should return false')
+    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'Authentication should not be granted when SignatureValidationError is raised')
   end
 
   def test_is_authentication_granted_is_false_when_toopher_api_error_is_raised
     @auth_request.merge!({'resource_type' => 'invalid', 'toopher_sig' => 'xEY+oOtJcdMsmTLp6eOy9isO/xQ='})
-    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'ToopherApiError should return false')
+    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'Authentication should not be granted when ToopherApiError is raised')
   end
 
   def test_is_authentication_granted_is_true_when_user_disabled_error_is_raised
     @auth_request.merge!({'error_code' => '704', 'error_message' => 'The specified user has disabled Toopher authentication.' })
-    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token), 'UserDisabledError should return true')
+    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token), 'Authentication should be granted when UserDisabledError is raised')
   end
 
   def test_get_user_management_url_only_username
