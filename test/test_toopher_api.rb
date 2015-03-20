@@ -189,6 +189,13 @@ class TestToopherIframe < Test::Unit::TestCase
     assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'AuthenticationRequest not granted should return false')
   end
 
+  def test_is_authentication_granted_is_false_with_auth_request_granted_and_pending_true
+    @auth_request['granted'] = 'true'
+    @auth_request['pending'] = 'true'
+    @auth_request['toopher_sig'] = 'vmWBQCy8Py5PVkMZRppbCG7cm0w='
+    assert(@iframe_api.is_authentication_granted(get_url_encoded_postback_data(@auth_request), @request_token) == false, 'Authentication should not be granted when AuthenticationRequest.granted = true and pending = true')
+  end
+
   def test_is_authentication_granted_is_false_when_pairing_is_returned
     assert(@iframe_api.is_authentication_granted(@encoded_pairing, @request_token) == false, 'Pairing object should return false')
   end
