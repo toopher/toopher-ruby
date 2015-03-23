@@ -171,6 +171,13 @@ class TestToopherIframe < Test::Unit::TestCase
         assert("Error code #{@auth_request['error_code']} : #{@auth_request['error_message']}" == e.message, 'UserDisabledError message was incorrect')
     end
 
+    def test_process_postback_with_707_raises_toopher_api_error
+        @auth_request.merge!({'error_code' => '707', 'error_message' => 'Not allowed: This pairing has been deactivated.'})
+        e = assert_raise ToopherApiError do
+            @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request), @request_token)
+        end
+    end
+
     def test_is_authentication_granted_is_true_with_auth_request_granted
         assert(@iframe_api.is_authentication_granted(@encoded_auth_request, @request_token), 'Authentication should be granted when AuthenticationRequest.granted = true')
     end
