@@ -54,6 +54,7 @@ end
 class SignatureValidationError< ToopherApiError
 end
 
+# Ruby helper library to generate Toopher iframe requests and validate responses
 class ToopherIframe
     DEFAULT_IFRAME_TTL = 300
     IFRAME_VERSION = '2'
@@ -69,6 +70,11 @@ class ToopherIframe
         @base_url = base_url
     end
 
+    # Generate a URL to retrieve a Toopher Pairing iframe for a given user
+    # @param [String] username Unique name that identifies that user. This will be displayed to the user on their mobile device when they pair or authenticate
+    # @param [String] reset_email Email address that the user has access to. In case the user has lost or cannot access their mobile device, Toopher will send a reset email to this address.
+    # @param [Hash] An optional hash of extra parameters to provide to the API.
+    # @return [String] A url that can be used to retrieve the Pairing iframe by the user's browser.
     def get_user_management_url(username, reset_email='', **kwargs)
         ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
         params = {
@@ -79,6 +85,14 @@ class ToopherIframe
         get_oauth_signed_url('web/manage_user', ttl, params)
     end
 
+    # Generate a URL to retrieve a Toopher Authentication iframe for a given user
+    # @param [String] username Unique name that identifies that user. This will be displayed to the user on their mobile device when they pair or authenticate
+    # @param [String] reset_email Email address that the user has access to. In case the user has lost or cannot access their mobile device, Toopher will send a reset email to this address.
+    # @param [String] request_token Unique token to be returned with the iframe response.
+    # @param [String] action_name The name of the action to authenticate; will be shown to the user. If blank, the Toopher API will default the actiont o 'Log In'
+    # @param [String] requester_metadata Will be included in the signed data returned with the iframe response.
+    # @param [Hash] extras An optional hash of extras to provide to the API.
+    # @return [String] A url that can be used to retrieve the Authentication iframe by the user's browser
     def get_authentication_url(username, reset_email='', request_token='', action_name='Log In', requester_metadata='', **kwargs)
         ttl = kwargs.delete(:ttl) || DEFAULT_IFRAME_TTL
         params = {
@@ -92,6 +106,11 @@ class ToopherIframe
         get_oauth_signed_url('web/authenticate', ttl, params)
     end
 
+    # Verify the authenticity of data returned from the Toopher iframe
+    # @param [Hash] The data returned from the iframe.
+    # @param [String] The unique request token.
+    # @param [Hash] An optional hash of extras.
+    # @return [AuthenticationRequest, Pairing or User] returns AuthenticationRequest, Pairing or User object, depending on data returned from Toopher iframe
     def process_postback(data, request_token='', **kwargs)
         toopher_data = Hash[URI::decode_www_form(data['toopher_iframe_data'])]
 
@@ -118,6 +137,11 @@ class ToopherIframe
         end
     end
 
+    # Evaluate whether AuthenticationRequest has been granted and is not pending
+    # @param [Hash] The data returned from the iframe.
+    # @param [String] The unique request token.
+    # @param [Hash] An optional hash of extras.
+    # @return [boolean] true or false indicating if AuthenticationRequest was granted and is not pending
     def is_authentication_granted(data, request_token='', **kwargs)
         begin
             authentication_request = process_postback(data, request_token, **kwargs)
@@ -455,17 +479,24 @@ class Pairing
         @user = User.new(json_obj['user'], api)
     end
 
+    # Update the Pairing with response from the API
     def refresh_from_server
         result = @api.advanced.raw.get('pairings/' + @id)
         update(result)
     end
 
+    # Retrieve link to allow user to reset the Pairing
+    # @param [Hash] kwargs An optional hash of extras to provide to the API.
+    # @return [String] A reset link.
     def get_reset_link(**kwargs)
         url = 'pairings/' + @id + '/generate_reset_link'
         result = @api.advanced.raw.post(url, kwargs)
         result['url']
     end
 
+    # Send reset link to user's reset email
+    # @param [String] email The email address where the reset link is sent.
+    # @param [Hash] kwargs An optional hash of extras to provide to the API.
     def email_reset_link_to_user(email, **kwargs)
         url = 'pairings/' + @id + '/send_reset_link'
         params = { :reset_email => email }
@@ -474,6 +505,8 @@ class Pairing
         true # would raise error in parse_request_error() if failed
     end
 
+    # Retrieve QR code image for the Pairing
+    # @return [String] Image as a String
     def get_qr_code_image
         url = 'qr/pairings/' + @id
         @api.advanced.raw.get(url, :raw => true)
@@ -554,11 +587,14 @@ class AuthenticationRequest
         update(json_obj)
     end
 
+    # Update the AuthenticationRequest with response from the API
     def refresh_from_server
         result = @api.advanced.raw.get('authentication_requests/' + @id)
         update(result)
     end
 
+    # Grant the AuthenticationRequest with an OTP
+    # @param [String] otp One-time password for the AuthenticationRequest.
     def grant_with_otp(otp, **kwargs)
         url = 'authentication_requests/' + @id + '/otp_auth'
         params = { :otp => otp }
@@ -668,6 +704,7 @@ class UserTerminal
         @user = User.new(json_obj['user'], api)
     end
 
+    # Update the UserTerminal with response from the API
     def refresh_from_server
         result = @api.advanced.raw.get('user_terminals/' + @id)
         update(result)
@@ -746,23 +783,27 @@ class User
         @toopher_authentication_enabled = json_obj['toopher_authentication_enabled']
     end
 
+    # Update the User with response from the API
     def refresh_from_server
         result = @api.advanced.raw.get('users/' + @id)
         update(result)
     end
 
+    # Enable Toopher authentication for the User
     def enable_toopher_authentication
         url = 'users/' + @id
         response = @api.advanced.raw.post(url, :toopher_authentication_enabled => true)
         update(response)
     end
 
+    # Disable Toopher authentication for the User
     def disable_toopher_authentication
         url = 'users/' + @id
         response = @api.advanced.raw.post(url, :toopher_authentication_enabled => false)
         update(response)
     end
 
+    # Remove all pairings for the User
     def reset
         params = { :name => @name }
         @api.advanced.raw.post('users/reset', params)
