@@ -124,15 +124,15 @@ class ToopherIframe
         else
             validate_data(toopher_data, request_token, kwargs)
             api = ToopherApi.new(@key, @secret)
-            resource_type = toopher_data['resource_type']
-            if resource_type == 'authentication_request'
+            case toopher_data['resource_type']
+            when 'authentication_request'
                 AuthenticationRequest.new(create_authentication_request_hash(toopher_data), api)
-            elsif resource_type == 'pairing'
+            when 'pairing'
                 Pairing.new(create_pairing_hash(toopher_data), api)
-            elsif resource_type == 'requester_user'
+            when 'requester_user'
                 User.new(create_user_hash(toopher_data), api)
             else
-                raise ToopherApiError, "The postback resource type is not valid #{resource_type}"
+                raise ToopherApiError, "The postback resource type is not valid #{toopher_data['resource_type']}"
             end
         end
     end
@@ -197,6 +197,14 @@ class ToopherIframe
         end
     end
 
+    def signature(data)
+        to_sign = URI.encode_www_form(Hash[data.sort]).encode('utf-8')
+        secret = @oauth_consumer.secret.encode('utf-8')
+        digest = OpenSSL::Digest::Digest.new('sha1')
+        hmac = OpenSSL::HMAC.digest(digest, secret, to_sign)
+        Base64.encode64(hmac).chomp.gsub( /\n/, '' )
+    end
+
     def create_authentication_request_hash(data)
         {
             'id' => data['id'],
@@ -248,16 +256,8 @@ class ToopherIframe
         }
     end
 
-    def signature(data)
-        to_sign = URI.encode_www_form(Hash[data.sort]).encode('utf-8')
-        secret = @oauth_consumer.secret.encode('utf-8')
-        digest = OpenSSL::Digest::Digest.new('sha1')
-        hmac = OpenSSL::HMAC.digest(digest, secret, to_sign)
-        Base64.encode64(hmac).chomp.gsub( /\n/, '' )
-    end
-
     def get_oauth_signed_url(url, ttl, **kwargs)
-        kwargs[:expires] ||= (Time.now.to_i + ttl).to_s
+        kwargs[:expires] = (Time.now.to_i + ttl).to_s
         kwargs[:v] = IFRAME_VERSION
         url = url + '?' + URI.encode_www_form(kwargs)
         res = Net::HTTP::Get.new(@base_url + url)
