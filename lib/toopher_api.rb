@@ -312,16 +312,14 @@ class ToopherApi
     def authenticate(id_or_username, terminal_name: '', requester_specified_id: '', action_name: '', **kwargs)
         begin
             UUIDTools::UUID.parse(id_or_username)
-            params = {:pairing_id => id_or_username}
+            params = { :pairing_id => id_or_username }
         rescue
-            params = {:user_name => id_or_username}
+            params = { :user_name => id_or_username }
         end
-
         params[:terminal_name] = terminal_name unless terminal_name.empty?
         params[:requester_specified_terminal_id] = requester_specified_id unless requester_specified_id.empty?
         params[:action_name] = action_name unless action_name.empty?
         params.merge!(kwargs)
-
         response = @advanced.raw.post('authentication_requests/initiate', params)
         AuthenticationRequest.new(response, self)
     end
@@ -371,8 +369,8 @@ class ApiRawRequester
     # @param [Hash] options OAuth Options hash.
     # @param [String] base_url The base URL to use for the Toopher API
     def initialize(key, secret, options, base_url)
-        key.empty? and raise ArgumentError, "Toopher consumer key cannot be empty!"
-        secret.empty? and raise ArgumentError, "Toopher consumer secret cannot be empty!"
+        raise ArgumentError, "Toopher consumer key cannot be empty!" if key.empty?
+        raise ArgumentError, "Toopher consumer secret cannot be empty!" if secret.empty?
 
         @oauth_consumer = OAuth::Consumer.new(key, secret)
         @oauth_options = options
@@ -438,7 +436,7 @@ class Pairings
     # @param [String] pairing_id The unique string identifier id returned by a previous pairing request.
     # @return [Pairing] Information about the pairing request
     def get_by_id(pairing_id)
-        response = @api.advanced.raw.get('pairings/' + pairing_id)
+        response = @api.advanced.raw.get("pairings/#{pairing_id}")
         Pairing.new(response, @api)
     end
 end
@@ -477,7 +475,9 @@ class Pairing
 
     # Update the Pairing with response from the API
     def refresh_from_server
-        result = @api.advanced.raw.get('pairings/' + @id)
+        result = @api.advanced.raw.get("pairings/#{@id}
+
+        ")
         update(result)
     end
 
@@ -485,7 +485,7 @@ class Pairing
     # @param [Hash] kwargs An optional hash of extras to provide to the API.
     # @return [String] A reset link.
     def get_reset_link(**kwargs)
-        url = 'pairings/' + @id + '/generate_reset_link'
+        url = "pairings/#{@id}/generate_reset_link"
         result = @api.advanced.raw.post(url, kwargs)
         result['url']
     end
@@ -494,17 +494,17 @@ class Pairing
     # @param [String] email The email address where the reset link is sent.
     # @param [Hash] kwargs An optional hash of extras to provide to the API.
     def email_reset_link_to_user(email, **kwargs)
-        url = 'pairings/' + @id + '/send_reset_link'
+        url = "pairings/#{@id}/send_reset_link"
         params = { :reset_email => email }
         params.merge!(kwargs)
         @api.advanced.raw.post(url, params)
-        true # would raise error in parse_request_error() if failed
+        true
     end
 
     # Retrieve QR code image for the Pairing
     # @return [String] Image as a String
     def get_qr_code_image
-        url = 'qr/pairings/' + @id
+        url = "qr/pairings/#{@id}"
         @api.advanced.raw.get(url, :raw => true)
     end
 
@@ -527,7 +527,7 @@ class AuthenticationRequests
     # Check on the status of a previous authentication request
     # @param [String] authentication_request_id The unique string identifier id returned by a previous authentication request.
     def get_by_id(authentication_request_id)
-        response = @api.advanced.raw.get('authentication_requests/' + authentication_request_id)
+        response = @api.advanced.raw.get("authentication_requests/#{authentication_request_id}")
         AuthenticationRequest.new(response, @api)
     end
 end
@@ -585,14 +585,14 @@ class AuthenticationRequest
 
     # Update the AuthenticationRequest with response from the API
     def refresh_from_server
-        result = @api.advanced.raw.get('authentication_requests/' + @id)
+        result = @api.advanced.raw.get("authentication_requests/#{@id}")
         update(result)
     end
 
     # Grant the AuthenticationRequest with an OTP
     # @param [String] otp One-time password for the AuthenticationRequest.
     def grant_with_otp(otp, **kwargs)
-        url = 'authentication_requests/' + @id + '/otp_auth'
+        url = "authentication_requests/#{@id}/otp_auth"
         params = { :otp => otp }
         params.merge!(kwargs)
         result = @api.advanced.raw.post(url, params)
@@ -650,7 +650,7 @@ class UserTerminals
     # Check on the status of a user terminal
     # @param [String] terminal_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user terminal.
     def get_by_id(terminal_id)
-        response = @api.advanced.raw.get('user_terminals/' + terminal_id)
+        response = @api.advanced.raw.get("user_terminals/#{terminal_id}")
         UserTerminal.new(response, @api)
     end
 
@@ -702,7 +702,7 @@ class UserTerminal
 
     # Update the UserTerminal with response from the API
     def refresh_from_server
-        result = @api.advanced.raw.get('user_terminals/' + @id)
+        result = @api.advanced.raw.get("user_terminals/#{@id}")
         update(result)
     end
 
@@ -725,7 +725,7 @@ class Users
     # Check on the status of a user
     # @param [String] user_id A unique string identifier generated and returned by the Toopher web service that is used to identify this user.
     def get_by_id(user_id)
-        response = @api.advanced.raw.get('users/' + user_id)
+        response = @api.advanced.raw.get("users/#{user_id}")
         User.new(response, @api)
     end
 
@@ -781,20 +781,20 @@ class User
 
     # Update the User with response from the API
     def refresh_from_server
-        result = @api.advanced.raw.get('users/' + @id)
+        result = @api.advanced.raw.get("users/#{@id}")
         update(result)
     end
 
     # Enable Toopher authentication for the User
     def enable_toopher_authentication
-        url = 'users/' + @id
+        url = "users/#{@id}"
         response = @api.advanced.raw.post(url, :toopher_authentication_enabled => true)
         update(response)
     end
 
     # Disable Toopher authentication for the User
     def disable_toopher_authentication
-        url = 'users/' + @id
+        url = "users/#{@id}"
         response = @api.advanced.raw.post(url, :toopher_authentication_enabled => false)
         update(response)
     end
