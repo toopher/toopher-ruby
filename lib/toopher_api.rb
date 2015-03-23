@@ -401,6 +401,7 @@ class ApiRawRequester
         req['User-Agent'] = "Toopher-Ruby/#{ToopherApi::VERSION} (Ruby #{RUBY_VERSION})"
         http = Net::HTTP::new(url.host, url.port)
         http.use_ssl = url.port == 443
+        @oauth_options ||= {}
         req.oauth!(http, @oauth_consumer, nil, @oauth_options)
         res = http.request(req)
         decoded = JSON.parse(res.body) if raw.nil? or res.code.to_i >= 400
