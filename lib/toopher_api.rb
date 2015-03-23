@@ -309,21 +309,17 @@ class ToopherApi
     # @param [String] terminal Either the terminal_name, a human recognizable string which represents the terminal from which the user is making the request, or terminal_name_extra ()requester_specified_id), a string to help differentiate identically named terminals. The terminal_name would be displayed to the user on the mobile app when authenticating. If this is not included, then a terminal_id returned from a previous request must be provided (see below). These should be unique values for each different device from which a user connects to your service (as best you can detect).
     # @param [String] action_name Optional action name, defaults to "log in" (displayed to the user)
     # @return [AuthenticationRequest] Information about the authentication request
-    def authenticate(id_or_username, terminal = '', action_name = '', **kwargs)
+    def authenticate(id_or_username, terminal_name: '', requester_specified_id: '', action_name: '', **kwargs)
         begin
             UUIDTools::UUID.parse(id_or_username)
-            params = {
-                :pairing_id => id_or_username,
-                :terminal_name => terminal
-            }
+            params = {:pairing_id => id_or_username}
         rescue
-            params = {
-                :user_name => id_or_username,
-                :requester_specified_terminal_id => terminal
-            }
+            params = {:user_name => id_or_username}
         end
 
-        params['action_name'] = action_name unless action_name.empty?
+        params[:terminal_name] = terminal_name unless terminal_name.empty?
+        params[:requester_specified_terminal_id] = requester_specified_id unless requester_specified_id.empty?
+        params[:action_name] = action_name unless action_name.empty?
         params.merge!(kwargs)
 
         response = @advanced.raw.post('authentication_requests/initiate', params)

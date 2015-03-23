@@ -34,7 +34,7 @@ api = ToopherApi.new("key", "secret")
 pairing = api.pair("username@yourservice.com", "pairing phrase")
 
 # Step 2 - Authenticate a log in
-auth_status = api.authenticate(pairing.id, 'my computer')
+auth_status = api.authenticate(pairing.id, terminal_name: 'my computer')
 
 # Once they've responded you can then check the status
 while auth_status.pending
@@ -79,7 +79,7 @@ begin
     # optimistically try to authenticate against Toopher API with username and a Terminal Identifier
     # Terminal Identifer is typically a randomly generated secure browser cookie.  It does not
     # need to be human-readable
-    auth = api.authenticate(user_name, terminal_identifier)
+    auth = api.authenticate(user_name, requester_specified_id: terminal_identifier)
 
     # if you got here, everything is good!  poll the auth request status as described above
     # there are four distinct errors ToopherApi can return if it needs more data

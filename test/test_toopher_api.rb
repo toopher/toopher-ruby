@@ -511,7 +511,7 @@ class TestToopherApi < Test::Unit::TestCase
                 :status => 200
             )
 
-        auth_request = @api.authenticate(@pairing[:id], @terminal[:name])
+        auth_request = @api.authenticate(@pairing[:id], terminal_name: @terminal[:name])
         compare_to_default_auth_request(auth_request)
     end
 
@@ -529,7 +529,7 @@ class TestToopherApi < Test::Unit::TestCase
                 :status => 200
             )
 
-        auth_request = @api.authenticate(@auth_request[:id], @terminal[:name], :test_param => 'foo')
+        auth_request = @api.authenticate(@auth_request[:id], terminal_name: @terminal[:name], :test_param => 'foo')
         compare_to_default_auth_request(auth_request)
     end
 
@@ -546,7 +546,7 @@ class TestToopherApi < Test::Unit::TestCase
                 :status => 200
             )
 
-        auth_request = @api.authenticate(@user[:name], @terminal[:requester_specified_id])
+        auth_request = @api.authenticate(@user[:name], requester_specified_id: @terminal[:requester_specified_id])
         compare_to_default_auth_request(auth_request)
     end
 
@@ -749,7 +749,7 @@ class TestToopherApi < Test::Unit::TestCase
             )
 
         assert_raise UserDisabledError do
-            auth_request = @api.authenticate('disabled user', 'terminal name')
+            auth_request = @api.authenticate('disabled user', requester_specified_id: 'terminal name')
         end
     end
 
@@ -764,7 +764,7 @@ class TestToopherApi < Test::Unit::TestCase
             )
 
         assert_raise UnknownUserError do
-            auth_request = @api.authenticate('unknown user', 'terminal name')
+            auth_request = @api.authenticate('unknown user', requester_specified_id: 'terminal name')
         end
     end
 
@@ -779,7 +779,7 @@ class TestToopherApi < Test::Unit::TestCase
             )
 
         assert_raise UnknownTerminalError do
-            auth_request = @api.authenticate('user', 'unknown terminal name')
+            auth_request = @api.authenticate('user', requester_specified_id: 'unknown terminal name')
         end
     end
 
@@ -794,7 +794,7 @@ class TestToopherApi < Test::Unit::TestCase
             )
 
         assert_raise PairingDeactivatedError do
-            auth_request = @api.authenticate('user', 'terminal name')
+            auth_request = @api.authenticate('user', requester_specified_id: 'terminal name')
         end
     end
 
@@ -809,7 +809,7 @@ class TestToopherApi < Test::Unit::TestCase
             )
 
         assert_raise PairingDeactivatedError do
-            auth_request = @api.authenticate('user', 'terminal name')
+            auth_request = @api.authenticate('user', terminal_name: 'terminal name')
         end
     end
 

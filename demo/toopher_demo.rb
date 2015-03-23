@@ -51,7 +51,7 @@ while (true)
   action.chomp!
 
   puts 'sending authentication request...'
-  auth_request = api.authenticate(pairing.id, terminal_name, action)
+  auth_request = api.authenticate(pairing.id, terminal_name: terminal_name, action_name: action)
 
   while(auth_request.pending)
     puts 'waiting for authentication...'
