@@ -279,7 +279,7 @@ class ToopherApi
     # @param [String] secret Your Toopher API Secret
     # @param [Hash] options OAuth Options hash.
     # @param [String] base_url The base URL to use for the Toopher API
-    def initialize(key, secret, options = {}, base_url = DEFAULT_BASE_URL)
+    def initialize(key, secret, base_url = DEFAULT_BASE_URL, options = {})
         @advanced = AdvancedApiUsageFactory.new(key, secret, options, base_url, self)
     end
 

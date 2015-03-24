@@ -283,7 +283,7 @@ end
 
 class TestToopherApi < Test::Unit::TestCase
     def setup
-        @api = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://api.toopher.test/v1/')
+        @api = ToopherApi.new('key', 'secret', base_url = 'https://api.toopher.test/v1/', { :nonce => 'nonce', :timestamp => '0' })
         @user = {
             :id => UUIDTools::UUID.random_create.to_str,
             :name => 'user',
@@ -830,7 +830,7 @@ end
 
 class TestPairing < Test::Unit::TestCase
     def setup
-        @api = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://api.toopher.test/v1/')
+        @api = ToopherApi.new('key', 'secret', base_url = 'https://api.toopher.test/v1/', { :nonce => 'nonce', :timestamp => '0' })
         @user = {
             'id' => UUIDTools::UUID.random_create.to_str,
             'name' => 'user',
@@ -945,7 +945,7 @@ end
 
 class TestAuthenticationRequest < Test::Unit::TestCase
     def setup
-        @api = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://api.toopher.test/v1/')
+        @api = ToopherApi.new('key', 'secret', base_url = 'https://api.toopher.test/v1/', { :nonce => 'nonce', :timestamp => '0' })
         @user = {
             'id' => UUIDTools::UUID.random_create.to_str,
             'name' => 'user',
@@ -1078,7 +1078,7 @@ end
 
 class TestUserTerminal < Test::Unit::TestCase
     def setup
-        @api = ToopherApi.new('key', 'secret', { :nonce => 'nonce', :timestamp => '0' }, base_url = 'https://api.toopher.test/v1/')
+        @api = ToopherApi.new('key', 'secret', base_url = 'https://api.toopher.test/v1/', { :nonce => 'nonce', :timestamp => '0' })
         @user = {
             'id' => UUIDTools::UUID.random_create.to_str,
             'name' => 'user',
@@ -1133,7 +1133,7 @@ end
 
 class TestUser < Test::Unit::TestCase
     def setup
-        @api = ToopherApi.new('key', 'secret', {:nonce => 'nonce', :timestamp => '0' }, base_url="https://api.toopher.test/v1/")
+        @api = ToopherApi.new('key', 'secret', base_url="https://api.toopher.test/v1/", {:nonce => 'nonce', :timestamp => '0' })
         @user = {
             'id' => UUIDTools::UUID.random_create.to_str,
             'name' => 'user name',
