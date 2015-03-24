@@ -123,7 +123,7 @@ class ToopherIframe
             end
         else
             validate_data(toopher_data, request_token, kwargs)
-            api = ToopherApi.new(@key, @secret)
+            api = ToopherApi.new(@key, @secret, @base_url)
             case toopher_data['resource_type']
             when 'authentication_request'
                 AuthenticationRequest.new(create_authentication_request_hash(toopher_data), api)
