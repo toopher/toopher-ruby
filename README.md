@@ -1,9 +1,7 @@
-# ToopherApi Ruby Client
-
-[![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
+# ToopherRuby [![Build Status](https://travis-ci.org/toopher/toopher-ruby.png?branch=master)](https://travis-ci.org/toopher/toopher-ruby)
 
 #### Introduction
-ToopherApi Ruby Client simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
+ToopherRuby is a Toopher API library that simplifies the task of interfacing with the Toopher API from Ruby code.  To use, just `gem install toopher_api` and you'll be ready to go.
 
 #### Learn the Toopher API
 Make sure you visit [http://dev.toopher.com](http://dev.toopher.com) to get acquainted with the Toopher API fundamentals.  The documentation there will tell you the details about the operations this API wrapper library provides.
@@ -115,3 +113,5 @@ To run all unit tests:
 $ rake test   # (or just 'rake')
 ```
 
+#### License
+ToopherRuby is licensed under the MIT License. See LICENSE.txt for the full license text.
