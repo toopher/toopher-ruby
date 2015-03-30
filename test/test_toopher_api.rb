@@ -104,6 +104,12 @@ class TestToopherIframe < Test::Unit::TestCase
         assert_kind_of(AuthenticationRequest, @iframe_api.process_postback(@encoded_auth_request))
     end
 
+    def test_process_postback_with_key_with_empty_value_returns_authentication_request
+        @auth_request['requester_metadata'] = ''
+        @auth_request['toopher_sig'] = '2CQouLu8dL3OA8N/mgHK6eeYHm4='
+        assert_kind_of(AuthenticationRequest, @iframe_api.process_postback(get_url_encoded_postback_data(@auth_request)))
+    end
+
     def test_process_postback_bad_signature_raises_error
         auth_request = @auth_request.clone
         auth_request['toopher_sig'] = 'invalid'
